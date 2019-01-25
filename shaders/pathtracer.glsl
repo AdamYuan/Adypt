@@ -1,6 +1,5 @@
 #define SHOW_BVH 0
 #define GLOSSY   0
-<<<<<<< HEAD
 #define SUN      1
 #define SUN_ENERGY vec3(5, 4, 3)
 #define SUB_PIXEL 6
@@ -8,10 +7,6 @@
 const ivec2 kPixel = ivec2(gl_GlobalInvocationID.xy);
 
 struct Ray { vec4 m_origin, m_dir; };
-=======
-#define SUN 1
-#define SUN_ENERGY vec3(5, 4, 3)
->>>>>>> origin/master
 struct Node //20 * 4 bytes for inner node
 {
 	vec4 m_head;
@@ -38,12 +33,8 @@ struct Material
 struct Woop { vec4 m0, m1, m2; };
 //images
 layout(rgba32f, binding = 0) uniform image2D uOutImg;
-<<<<<<< HEAD
 layout(rgba32f, binding = 1) uniform image2D uPrimaryTmpImg;
 layout(rg8, binding = 2) uniform image2D uSobolBiasImg;
-=======
-
->>>>>>> origin/master
 #if TEXTURE_COUNT != 0
 //bindless textures
 layout(binding = 1) uniform uuTextures { sampler2D uTextures[TEXTURE_COUNT]; };
@@ -55,11 +46,7 @@ layout(std430, binding = 1) readonly buffer uuTriIndices { int uTriIndices[]; };
 layout(std430, binding = 2) readonly buffer uuTriMatrices { Woop uTriMatrices[]; };
 layout(std430, binding = 3) readonly buffer uuTriangles { Triangle uTriangles[]; };
 layout(std430, binding = 4) readonly buffer uuMaterials { Material uMaterials[]; };
-<<<<<<< HEAD
 layout(std430, binding = 5) buffer uuSobol { vec2 uSobol[]; };
-=======
-layout(std430, binding = 6) buffer uuSeed { uvec4 uSeed[]; };
->>>>>>> origin/master
 
 //args
 layout(std140, binding = 0) uniform uuArgs
@@ -328,29 +315,7 @@ void BVHIntersection(in const vec3 origin, vec3 dir, inout int o_hit_tri_idx, in
 }
 
 //random number generator
-<<<<<<< HEAD
 vec2 Sobol(in const int i) { return fract(uSobol[i] + imageLoad(uSobolBiasImg, kPixel).xy); }
-=======
-uint taus_step(uint z, int S1, int S2, int S3, uint M)
-{
-	uint b = (((z << S1) ^ z) >> S2);
-	return (((z & M) << S3) ^ b);
-}
-uint lcg_step(uint z, uint A, uint C)
-{
-	return (A * z + C);
-}
-float Rand()
-{
-	uvec4 seed = uSeed[gl_LocalInvocationIndex];
-	seed.x = taus_step(seed.x, 13, 19, 12, 4294967294);
-	seed.y = taus_step(seed.y, 2, 25, 4, 4294967288);
-	seed.z = taus_step(seed.z, 3, 11, 17, 4294967280);
-	seed.w = lcg_step(seed.w, 1664525, 1013904223);
-	uSeed[gl_LocalInvocationIndex] = seed;
-	return float(seed.x ^ seed.y ^ seed.z ^ seed.w) * 2.3283064365387e-10f;
-}
->>>>>>> origin/master
 
 float Fresnel(in const vec3 indir, in const vec3 normal, in const float dissolve)
 {
@@ -373,7 +338,6 @@ float Fresnel(in const vec3 indir, in const vec3 normal, in const float dissolve
 }
 
 #define TWO_PI 6.28318530718f
-<<<<<<< HEAD
 vec3 SampleHemisphere(in const int b, in const float e)
 {
 	vec2 r = Sobol(b);
@@ -395,32 +359,6 @@ vec3 AlignDirection(in const vec3 dir, in const vec3 target)
 	return dir.x*u + dir.y*v + dir.z*target;
 }
 
-=======
-vec3 SampleHemisphere(in const float e)
-{
-	float r1 = Rand() * TWO_PI, r2 = Rand();
-	float cos_phi = cos(r1);
-	float sin_phi = sin(r1);
-	float cos_theta = pow((1.0f - r2), 1.0f/(e + 1.0f));
-	float sin_theta = sqrt(1.0f - cos_theta*cos_theta);
-	float pu = sin_theta * cos_phi;
-	float pv = sin_theta * sin_phi;
-	float pw = cos_theta;
-	return vec3(pu, pv, pw); 
-}
-
-vec3 AlignDirection(in const vec3 dir, in const vec3 target)
-{
-	vec3 u = normalize(cross(abs(target.x) > .01 ? vec3(0, 1, 0) : vec3(1, 0, 0), target));
-	vec3 v = cross(target, u);
-	return dir.x*u + dir.y*v + dir.z*target;
-}
-
-/*vec3 GlossyDir(in const int bounce, in const float e, in const vec3 normal, in const vec3 dir)
-{
-	return d;
-}*/
->>>>>>> origin/master
 void FetchInfo(in const int tri_idx, in const vec2 tri_uv, out vec3 position, out vec3 normal, 
 			   out vec3 emissive, out vec3 diffuse, out vec3 specular, inout Material mtl)
 {
@@ -485,37 +423,21 @@ vec3 Render(vec3 origin, vec3 dir)
 		ret += color * emissive;
 		switch(mtl.m_illum)
 		{
-#if GLOSSY == 0
-			case 2:
-#endif
 			case 1: //diffuse only
-<<<<<<< HEAD
 #if GLOSSY == 0
 			case 2:
 #endif
 				dir = AlignDirection(SampleHemisphere(b, 0), normal);
-=======
-				dir = AlignDirection(SampleHemisphere(0), normal);
->>>>>>> origin/master
 				color *= diffuse;
 				break;
 #if GLOSSY == 1
 			case 2: //glossy reflection
-<<<<<<< HEAD
 				float e = mtl.m_shininess * 100.0f;
 				vec3 r = reflect(dir, normal), s = SampleHemisphere(b, e);
 				dir = AlignDirection(s, r);
 				if(dot(dir, normal) < 0.0f)
 					return ret;
 				//dir = reflect(-dir, r);
-=======
-				float e = mtl.m_shininess * 10.0f;
-				vec3 r = reflect(dir, normal), s = SampleHemisphere(e);
-				dir = AlignDirection(s, r);
-				if(dot(dir, normal) < 0.0f)
-					return ret;
-					//dir = reflect(-dir, r);
->>>>>>> origin/master
 
 				color *= diffuse + specular*pow(dot(dir, r), e), vec3(0);
 				break;
@@ -535,11 +457,7 @@ vec3 Render(vec3 origin, vec3 dir)
 					eta = 1.0 / eta;
 				}
 				float cos2 = 1.0 - eta*eta * (1.0 - cos1*cos1);
-<<<<<<< HEAD
 				if(cos2 > 0 && Sobol(b).x >= f)
-=======
-				if(cos2 > 0 && Rand() >= f)
->>>>>>> origin/master
 					dir = normalize(dir*eta + normal * (eta*cos1 + sqrt(cos2)));
 				else
 					dir = reflect(dir, normal);
@@ -562,11 +480,7 @@ void main()
 	if(uIteration == -1) //only do primary rays
 	{
 		vec2 tri_uv; int tri_idx;
-<<<<<<< HEAD
 		BVHIntersection(uPosition.xyz, Camera(vec2(0.5f)), tri_idx, tri_uv);
-=======
-		BVHIntersection(uPosition.xyz, dir, tri_idx, tri_uv);
->>>>>>> origin/master
 #if SHOW_BVH == 0
 		if(tri_idx != -1)
 		{
@@ -581,7 +495,6 @@ void main()
 	}
 	else //progress rendering
 	{
-<<<<<<< HEAD
 		int subpixel_idx = (uIteration / TMP_LIFETIME) % (SUB_PIXEL * SUB_PIXEL);
 		const float unit = 1.0f / float(SUB_PIXEL);
 		vec2 b = vec2((subpixel_idx / SUB_PIXEL)*unit, (subpixel_idx % SUB_PIXEL)*unit);
@@ -589,16 +502,5 @@ void main()
 		vec3 color = Render(uPosition.xyz, Camera(b));
 		color = (imageLoad(uOutImg, kPixel).xyz*uIteration + color) / float(uIteration + 1);
 		imageStore(uOutImg, kPixel, vec4(color, 1.0f));
-=======
-		vec2 b = vec2(Rand(), Rand()) * 2.0;
-		b.x = b.x < 1 ? sqrt(b.x) - 1 : 1 - sqrt(2 - b.x);
-		b.y = b.y < 1 ? sqrt(b.y) - 1 : 1 - sqrt(2 - b.y);
-		vec2 scrpos = 2.0f*vec2(ixy + b)/vec2(uImgSize) - 1.0f;
-		vec3 dir = normalize(mat3(uInvView) * (uInvProjection * vec4(scrpos, 1.0f, 1.0f)).xyz);
-
-		vec3 color = Render(uPosition.xyz, dir);
-		color = (imageLoad(uOutImg, ixy).xyz*uIteration + color) / float(uIteration + 1);
-		imageStore(uOutImg, ixy, vec4(color, 1.0f));
->>>>>>> origin/master
 	}
 }

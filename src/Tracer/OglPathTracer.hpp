@@ -10,6 +10,7 @@
 #include <mygl3/shader.hpp>
 #include "../Util/Shape.hpp"
 #include "../Util/Platform.hpp"
+#include "../Util/Sobol.hpp"
 #include "OglScene.hpp"
 
 class OglPathTracer
@@ -30,16 +31,11 @@ private:
 	GLuint m_group_x, m_group_y;
 	int m_uiwidth, m_uiheight;
 
-<<<<<<< HEAD
 	mygl3::Texture2D m_result_tex, m_sobol_bias_tex, m_primary_tmp_tex;
 	mygl3::Buffer m_sobol_buffer, m_args_buffer;
 
 	GLfloat *m_sobol_seq;
 	Sobol m_sobol_gen;
-=======
-	mygl3::Texture2D m_result_tex;
-	mygl3::Buffer m_args_buffer, m_rand_buffer;
->>>>>>> origin/master
 
 	GLint m_local_iteration;
 
