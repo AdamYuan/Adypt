@@ -17,32 +17,24 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	}
 
-	Scene scene{pf.GetObjFilename()};
-	WideBVH wbvh{pf.GetBVHFilename()};
+	OglInterface ui;
 
-	//create wide-bvh
-	if(wbvh.Empty() || wbvh.GetConfig() != pf.GetBVHConfig())
 	{
-		SBVH sbvh;
-		SBVHBuilder{pf.GetBVHConfig(), &sbvh, scene}.Run();
-		WideBVHBuilder{pf.GetBVHConfig(), &wbvh, sbvh}.Run();
-		wbvh.Save(pf.GetBVHFilename());
+		Scene scene{pf.GetObjFilename()};
+		WideBVH wbvh{pf.GetBVHFilename()};
+
+		//create wide-bvh
+		if(wbvh.Empty() || wbvh.GetConfig() != pf.GetBVHConfig())
+		{
+			SBVH sbvh;
+			SBVHBuilder{pf.GetBVHConfig(), &sbvh, scene}.Run();
+			WideBVHBuilder{pf.GetBVHConfig(), &wbvh, sbvh}.Run();
+			wbvh.Save(pf.GetBVHFilename());
+		}
+
+		ui.Initialize(pf, scene, wbvh);
 	}
-
-	OglInterface{pf, scene, wbvh}.Run();
-
-	/*Scene scene{pf.GetObjFilename()};
-	SBVH bvh{pf.GetBVHFilename()};
-
-	//should generate bvh
-	if(bvh.Empty())
-	{
-		SBVHBuilder{scene, &bvh}.Run();
-		bvh.SaveToFile(pf.GetBVHFilename());
-	}
-
-	OglInterface ogltracer{pf, scene, bvh};
-	ogltracer.Run();*/
+	ui.Run();
 
 	return EXIT_SUCCESS;
 }

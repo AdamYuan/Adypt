@@ -1,9 +1,4 @@
 #define SHOW_BVH 0
-#define GLOSSY   0
-#define SUN      1
-#define SUN_ENERGY vec3(5, 4, 3)
-#define SUB_PIXEL 6
-#define TMP_LIFETIME 16
 const ivec2 kPixel = ivec2(gl_GlobalInvocationID.xy);
 
 struct Ray { vec4 m_origin, m_dir; };
@@ -51,10 +46,8 @@ layout(std430, binding = 5) buffer uuSobol { vec2 uSobol[]; };
 //args
 layout(std140, binding = 0) uniform uuArgs
 {
-	ivec2 uImgSize; 
 	int uIteration;
-	int _a1;
-	vec4 uPosition;
+	float uPosX, uPosY, uPosZ;
 	mat4 uInvProjection;
 	mat4 uInvView;
 };
@@ -178,19 +171,19 @@ void BVHIntersection(in const vec3 origin, vec3 dir, inout int o_hit_tri_idx, in
 				tzmax[2] = float((swizzled_hiz >> 16) & 0xffu) * adjusted_idir_z + adjusted_origin.z;
 				tzmax[3] = float((swizzled_hiz >> 24) & 0xffu) * adjusted_idir_z + adjusted_origin.z;
 
-				ctmin = max(max(txmin[0], tymin[0]), max(tzmin[0], RAY_T_MIN));
+				ctmin = max(max(txmin[0], tymin[0]), max(tzmin[0], RAY_TMIN));
 				ctmax = min(min(txmax[0], tymax[0]), min(tzmax[0], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4       ) & 0xffu) << ((bit_index4       ) & 0xffu);
 
-				ctmin = max(max(txmin[1], tymin[1]), max(tzmin[1], RAY_T_MIN));
+				ctmin = max(max(txmin[1], tymin[1]), max(tzmin[1], RAY_TMIN));
 				ctmax = min(min(txmax[1], tymax[1]), min(tzmax[1], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4 >>  8u) & 0xffu) << ((bit_index4 >>  8u) & 0xffu);
 
-				ctmin = max(max(txmin[2], tymin[2]), max(tzmin[2], RAY_T_MIN));
+				ctmin = max(max(txmin[2], tymin[2]), max(tzmin[2], RAY_TMIN));
 				ctmax = min(min(txmax[2], tymax[2]), min(tzmax[2], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4 >> 16u) & 0xffu) << ((bit_index4 >> 16u) & 0xffu);
 
-				ctmin = max(max(txmin[3], tymin[3]), max(tzmin[3], RAY_T_MIN));
+				ctmin = max(max(txmin[3], tymin[3]), max(tzmin[3], RAY_TMIN));
 				ctmax = min(min(txmax[3], tymax[3]), min(tzmax[3], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4 >> 24u) & 0xffu) << ((bit_index4 >> 24u) & 0xffu);
 			}
@@ -237,19 +230,19 @@ void BVHIntersection(in const vec3 origin, vec3 dir, inout int o_hit_tri_idx, in
 				tzmax[2] = float((swizzled_hiz >> 16) & 0xffu) * adjusted_idir_z + adjusted_origin.z;
 				tzmax[3] = float((swizzled_hiz >> 24) & 0xffu) * adjusted_idir_z + adjusted_origin.z;
 
-				ctmin = max(max(txmin[0], tymin[0]), max(tzmin[0], RAY_T_MIN));
+				ctmin = max(max(txmin[0], tymin[0]), max(tzmin[0], RAY_TMIN));
 				ctmax = min(min(txmax[0], tymax[0]), min(tzmax[0], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4       ) & 0xffu) << ((bit_index4       ) & 0xffu);
 
-				ctmin = max(max(txmin[1], tymin[1]), max(tzmin[1], RAY_T_MIN));
+				ctmin = max(max(txmin[1], tymin[1]), max(tzmin[1], RAY_TMIN));
 				ctmax = min(min(txmax[1], tymax[1]), min(tzmax[1], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4 >>  8u) & 0xffu) << ((bit_index4 >>  8u) & 0xffu);
 
-				ctmin = max(max(txmin[2], tymin[2]), max(tzmin[2], RAY_T_MIN));
+				ctmin = max(max(txmin[2], tymin[2]), max(tzmin[2], RAY_TMIN));
 				ctmax = min(min(txmax[2], tymax[2]), min(tzmax[2], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4 >> 16u) & 0xffu) << ((bit_index4 >> 16u) & 0xffu);
 
-				ctmin = max(max(txmin[3], tymin[3]), max(tzmin[3], RAY_T_MIN));
+				ctmin = max(max(txmin[3], tymin[3]), max(tzmin[3], RAY_TMIN));
 				ctmax = min(min(txmax[3], tymax[3]), min(tzmax[3], hit_t));
 				if(ctmin <= ctmax) hitmask |= ((child_bits4 >> 24u) & 0xffu) << ((bit_index4 >> 24u) & 0xffu);
 			}
@@ -276,7 +269,7 @@ void BVHIntersection(in const vec3 origin, vec3 dir, inout int o_hit_tri_idx, in
 			tidz = 1.0 / dot(dir, tv00.xyz);
 			tt = toz * tidz;
 
-			if(tt > RAY_T_MIN && tt < hit_t)
+			if(tt > RAY_TMIN && tt < hit_t)
 			{
 				tox = tv11.w + dot(origin, tv11.xyz);
 				tdx = dot(dir, tv11.xyz);
@@ -316,26 +309,6 @@ void BVHIntersection(in const vec3 origin, vec3 dir, inout int o_hit_tri_idx, in
 
 //random number generator
 vec2 Sobol(in const int i) { return fract(uSobol[i] + imageLoad(uSobolBiasImg, kPixel).xy); }
-
-float Fresnel(in const vec3 indir, in const vec3 normal, in const float dissolve)
-{
-	float cosi = dot(indir, normal); 
-	float etai, etat;
-	if(cosi > 0) etai = dissolve, etat = 1.0;
-	else etai = 1.0, etat = dissolve;
-	// Compute sini using Snell's law
-	float sint = etai / etat * sqrt(max(0.f, 1.0f - cosi*cosi)); 
-	// Total internal reflection
-	if (sint >= 1.0)
-		return 1.0f;
-	else { 
-		float cost = sqrt(max(0.f, 1 - sint * sint)); 
-		cosi = abs(cosi); 
-		float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost)); 
-		float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost)); 
-		return (Rs*Rs + Rp*Rp)*0.5f;
-	} 
-}
 
 #define TWO_PI 6.28318530718f
 vec3 SampleHemisphere(in const int b, in const float e)
@@ -379,7 +352,7 @@ void FetchInfo(in const int tri_idx, in const vec2 tri_uv, out vec3 position, ou
 		vec2(tri.m_tc2[0], tri.m_tc2[1])*tri_uv.y + 
 		vec2(tri.m_tc3[0], tri.m_tc3[1])*(1.0 - tri_uv.x - tri_uv.y);
 	if(mtl.m_dtex != -1)
-		diffuse = texture(uTextures[mtl.m_dtex], texcoords).rgb; 
+		diffuse = texture(uTextures[mtl.m_dtex], texcoords).rgb;
 	else
 #endif
 		diffuse = vec3(mtl.m_dr, mtl.m_dg, mtl.m_db);
@@ -393,6 +366,8 @@ vec3 Render(vec3 origin, vec3 dir)
 	Material mtl;
 	for(int b = 0; b < MAX_BOUNCE; ++b)
 	{
+#if TMP_LIFETIME > 1
+		//use primary ray tmp
 		if(b > 0)
 			BVHIntersection(origin, dir, tri_idx, tri_uv);
 		else
@@ -412,53 +387,70 @@ vec3 Render(vec3 origin, vec3 dir)
 				imageStore(uPrimaryTmpImg, kPixel, tmp);
 			}
 		}
+#else
+		BVHIntersection(origin, dir, tri_idx, tri_uv);
+#endif
+
 		if(tri_idx == -1)
 		{
-#if SUN == 1
-			ret += color * SUN_ENERGY;
-#endif
+			ret += color * SUN;
 			break;
 		}
+
 		FetchInfo(tri_idx, tri_uv, origin, normal, emissive, diffuse, specular, mtl);
 		ret += color * emissive;
 		switch(mtl.m_illum)
 		{
+			case 2: //glossy reflection
+				float e = mtl.m_shininess*0.01f;
+				if(e > MIN_GLOSSY_EXP)
+				{
+					vec3 r = reflect(dir, normal), s = SampleHemisphere(b, e);
+					dir = AlignDirection(s, r);
+					if(dot(dir, normal) < 0.0f) return ret;
+
+					color *= diffuse + specular*pow(dot(dir, r), e);
+					break;
+				} //else do diffuse 
 			case 1: //diffuse only
-#if GLOSSY == 0
-			case 2:
-#endif
 				dir = AlignDirection(SampleHemisphere(b, 0), normal);
 				color *= diffuse;
 				break;
-#if GLOSSY == 1
-			case 2: //glossy reflection
-				float e = mtl.m_shininess * 100.0f;
-				vec3 r = reflect(dir, normal), s = SampleHemisphere(b, e);
-				dir = AlignDirection(s, r);
-				if(dot(dir, normal) < 0.0f)
-					return ret;
-				//dir = reflect(-dir, r);
-
-				color *= diffuse + specular*pow(dot(dir, r), e), vec3(0);
-				break;
-#endif
 			case 3: case 4: case 5: //mirror reflection
 				color *= specular;
 				dir = reflect(dir, normal);
 				break;
 			case 6: case 7: //refraction, fresnel
 				float eta = mtl.m_ior;
-				float f = Fresnel(dir, normal, eta);
-				float cos1 = dot(normal, dir);
-				if(cos1 < 0)
+
+				float cosi = dot(dir, normal); 
+				float fresnel;
 				{
-					normal = -normal;
-					cos1 = -cos1;
-					eta = 1.0 / eta;
+					float etai, etat;
+					if(cosi > 0)
+						etai = eta, etat = 1.0;
+					else
+					{
+						etai = 1.0, etat = eta;
+						normal = -normal;
+						cosi = -cosi;
+					}
+					eta = etai / etat;
+					// Compute sini using Snell's law
+					float sint = etai / etat * sqrt(max(0.f, 1.0f - cosi*cosi));
+					// Total internal reflection
+					if (sint >= 1.0)
+						fresnel = 1.0f;
+					else {
+						float cost = sqrt(max(0.f, 1 - sint * sint));
+						float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost));
+						float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost));
+						fresnel = (Rs*Rs + Rp*Rp)*0.5f;
+					}
 				}
-				float cos2 = 1.0 - eta*eta * (1.0 - cos1*cos1);
-				if(cos2 > 0 && Sobol(b).x >= f)
-					dir = normalize(dir*eta + normal * (eta*cos1 + sqrt(cos2)));
+				float cos2 = 1.0 - eta*eta * (1.0 - cosi*cosi);
+				if(cos2 > 0 && Sobol(b).x >= fresnel)
+					dir = normalize(dir*eta + normal * (eta*cosi + sqrt(cos2)));
 				else
 					dir = reflect(dir, normal);
 				break;
@@ -467,20 +459,29 @@ vec3 Render(vec3 origin, vec3 dir)
 	return ret;
 }
 
+vec2 SubPixel()
+{
+	int subpixel_idx = (uIteration / TMP_LIFETIME) % (SUB_PIXEL * SUB_PIXEL);
+	const float unit = 1.0f / float(SUB_PIXEL);
+	return vec2((subpixel_idx / SUB_PIXEL)*unit, (subpixel_idx % SUB_PIXEL)*unit);
+}
+
 vec3 Camera(in const vec2 bias)
 {
-	vec2 scrpos = 2.0f*(vec2(kPixel) + bias)/vec2(uImgSize) - 1.0f;
+	vec2 scrpos = 2.0f*(vec2(kPixel) + bias)/vec2(IMG_SIZE) - 1.0f;
+	scrpos.y = -scrpos.y;
 	return normalize(mat3(uInvView) * (uInvProjection * vec4(scrpos, 1.0f, 1.0f)).xyz);
 }
 
 void main()
 {
-	if(kPixel.x >= uImgSize.x || kPixel.y >= uImgSize.y) return;
+	if(kPixel.x >= IMG_SIZE.x || kPixel.y >= IMG_SIZE.y) return;
 
+	vec3 origin = vec3(uPosX, uPosY, uPosZ);
 	if(uIteration == -1) //only do primary rays
 	{
 		vec2 tri_uv; int tri_idx;
-		BVHIntersection(uPosition.xyz, Camera(vec2(0.5f)), tri_idx, tri_uv);
+		BVHIntersection(origin, Camera( vec2(0.5f) ), tri_idx, tri_uv);
 #if SHOW_BVH == 0
 		if(tri_idx != -1)
 		{
@@ -495,11 +496,7 @@ void main()
 	}
 	else //progress rendering
 	{
-		int subpixel_idx = (uIteration / TMP_LIFETIME) % (SUB_PIXEL * SUB_PIXEL);
-		const float unit = 1.0f / float(SUB_PIXEL);
-		vec2 b = vec2((subpixel_idx / SUB_PIXEL)*unit, (subpixel_idx % SUB_PIXEL)*unit);
-
-		vec3 color = Render(uPosition.xyz, Camera(b));
+		vec3 color = Render(origin, Camera( SubPixel() ));
 		color = (imageLoad(uOutImg, kPixel).xyz*uIteration + color) / float(uIteration + 1);
 		imageStore(uOutImg, kPixel, vec4(color, 1.0f));
 	}

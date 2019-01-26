@@ -11,7 +11,7 @@ void Scene::Load(const char *filename)
 	//get base dir
 	{
 		const char *s = filename + strlen(filename);
-		while(*(s - 1) != '/' && s > filename) s --;
+		while(*(s - 1) != '/' && *(s - 1) != '\\' && s > filename) s --;
 		m_base_dir = {filename, s};
 	}
 	tinyobj::attrib_t attrib;
@@ -19,7 +19,10 @@ void Scene::Load(const char *filename)
 
 	std::string err;
 	if(!tinyobj::LoadObj(&attrib, &shapes, &m_materials, &err, filename, m_base_dir.c_str()))
+	{
+		printf("[SCENE]Failed to load %s\n", filename);
 		return;
+	}
 
 	if (!err.empty())
 		printf("%s\n", err.c_str());

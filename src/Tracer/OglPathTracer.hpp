@@ -18,10 +18,8 @@ class OglPathTracer
 private:
 	struct GPUShaderArgs
 	{
-		GLint m_img_width, m_img_height;
 		GLint m_iteration;
-		GLint _a1;
-		glm::vec4 m_position;
+		glm::vec3 m_position;
 		glm::mat4 m_inv_projection, m_inv_view;
 	} *m_args;
 
@@ -29,7 +27,7 @@ private:
 
 	mygl3::Shader m_shader;
 	GLuint m_group_x, m_group_y;
-	int m_uiwidth, m_uiheight;
+	int m_uiwidth, m_uiheight, m_texture_count;
 
 	mygl3::Texture2D m_result_tex, m_sobol_bias_tex, m_primary_tmp_tex;
 	mygl3::Buffer m_sobol_buffer, m_args_buffer;
@@ -39,9 +37,10 @@ private:
 
 	GLint m_local_iteration;
 
-	void create_shaders(int texture_count);
+	void create_shaders();
 	void create_buffers();
 	void bind_buffers(const OglScene &scene);
+	std::string generate_shader_head();
 
 public:
 	void Initialize(const Platform &platform, const OglScene &scene);
@@ -50,6 +49,7 @@ public:
 	void Render();
 	int GetSPP() const { return m_local_iteration; }
 	const mygl3::Texture2D &GetResult() { return m_result_tex; }
+	void SaveResult(const char *name);
 };
 
 

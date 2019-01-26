@@ -43,6 +43,7 @@ private:
 public:
 	const AABB &GetAABB() const { return m_aabb; }
 	void Initialize(const Scene &scene, const WideBVH &bvh);
+
 	const mygl3::Buffer &GetTriangleBuffer() const { return m_triangles_ssbo; }
 	const mygl3::Buffer &GetTriMatrixBuffer() const { return m_tri_matrices_ssbo; }
 	const mygl3::Buffer &GetTriIndexBuffer() const { return m_tri_indices_ssbo; }

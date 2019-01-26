@@ -45,19 +45,15 @@ void OglScene::init_materials(const Scene &scene, std::vector<GPUMaterial> *mate
 		materials->emplace_back();
 		GPUMaterial &gml = materials->back();
 
-		gml.m_dtex = -1;
-
 		if(!ml.diffuse_texname.empty())
 			gml.m_dtex = load_texture(&m_textures, tex_name_set, (scene.GetBasePath() + ml.diffuse_texname).c_str());
 		else
 		{
+			gml.m_dtex = -1;
 			gml.m_dr = ml.diffuse[0];
 			gml.m_dg = ml.diffuse[1];
 			gml.m_db = ml.diffuse[2];
 		}
-
-		//if(!ml.alpha_texname.empty())
-		//	gml.m_atex = load_texture(&m_textures, tex_name_set, (scene.GetBasePath() + ml.alpha_texname).c_str());
 
 		gml.m_er = ml.emission[0];
 		gml.m_eg = ml.emission[1];
@@ -68,10 +64,7 @@ void OglScene::init_materials(const Scene &scene, std::vector<GPUMaterial> *mate
 		gml.m_sb = ml.specular[2];
 
 		gml.m_illum = ml.illum;
-
 		gml.m_shininess = ml.shininess;
-		gml.m_shininess /= 1000.0f;
-
 		gml.m_dissolve = ml.dissolve;
 		gml.m_refraction_index = ml.ior;
 	}

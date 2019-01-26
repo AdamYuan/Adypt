@@ -24,13 +24,14 @@ struct ScreenQuad
 class OglInterface
 {
 private:
-	const Platform::UIConfig m_config;
+	std::string m_model_name;
+	Platform::UIConfig m_config;
 	GLFWwindow *m_window;
 
 	//BVH m_bvh; Scene m_scene;
 	OglScene m_oglscene;
 	bool m_control{true}; //whether the window is under key or mouse control
-	bool m_rendering{false}; //doing progressive render
+	bool m_rendering_flag{false}; //doing progressive render
 
 	ScreenQuad m_screenquad;
 	mygl3::Camera m_camera;
@@ -44,7 +45,7 @@ private:
 	static void key_callback(GLFWwindow *window, int key, int, int action, int);
 	static void focus_callback(GLFWwindow *window, int focused);
 public:
-	OglInterface(const Platform &platform, const Scene &scene, const WideBVH &bvh);
+	void Initialize(const Platform &platform, const Scene &scene, const WideBVH &bvh);
 	void Run();
 };
 

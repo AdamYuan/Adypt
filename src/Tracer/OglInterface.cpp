@@ -2,10 +2,14 @@
 #include "OglInterface.hpp"
 #include "../BVH/WideBVH.hpp"
 
-OglInterface::OglInterface(const Platform &platform, const Scene &scene, const WideBVH &bvh)
-		: m_config{platform.GetUIConfig()}
+void OglInterface::Initialize(const Platform &platform, const Scene &scene, const WideBVH &bvh)
 {
+	m_config = platform.GetUIConfig();
+	m_model_name = platform.GetName();
 	init_window();
+
+	glEnable(GL_CULL_FACE);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	m_oglscene.Initialize(scene, bvh);
 	m_screenquad.Initialize();
@@ -16,7 +20,6 @@ OglInterface::OglInterface(const Platform &platform, const Scene &scene, const W
 
 void OglInterface::Run()
 {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	char title[32];
 	while(!glfwWindowShouldClose(m_window))
 	{
@@ -24,17 +27,15 @@ void OglInterface::Run()
 		sprintf(title, "fps: %f [%d spp]",
 				m_fps.GetFps(), m_path_tracer.GetSPP());
 		glfwSetWindowTitle(m_window, title);
-		if(m_control && !m_rendering)
+		if(m_control && !m_rendering_flag)
 		{
 			cam_control();
 			m_path_tracer.UpdateCamera(m_oglscene, m_projection, m_camera.GetMatrix(), m_camera.GetPosition());
 		}
-		if(m_rendering)
+		if(m_rendering_flag)
 			m_path_tracer.Render();
 
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		glDisable(GL_DEPTH_TEST);
 		m_screenquad.Render(m_path_tracer.GetResult());
 
 		glfwSwapBuffers(m_window);
@@ -78,7 +79,9 @@ void OglInterface::key_callback(GLFWwindow *window, int key, int, int action, in
 			glfwSetInputMode(window, GLFW_CURSOR, app->m_control ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
 		}
 		else if(key == GLFW_KEY_R)
-			app->m_rendering = !app->m_rendering;
+			app->m_rendering_flag = !app->m_rendering_flag;
+		else if(key == GLFW_KEY_P)
+			app->m_path_tracer.SaveResult(app->m_model_name.c_str());
 	}
 }
 
@@ -123,12 +126,12 @@ void ScreenQuad::Initialize()
 	m_shader.LoadFromFile("shaders/quad.frag", GL_FRAGMENT_SHADER);
 
 	constexpr float quad_vertices[] {
-			-1.0f, -1.0f, 0.0f, 0.0f,
-			1.0f, -1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 0.0f, 1.0f,
-			-1.0f, -1.0f, 0.0f, 0.0f };
+			-1.0f, -1.0f, 0.0f, 1.0f,
+			1.0f, -1.0f, 1.0f, 1.0f,
+			1.0f, 1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f, 0.0f,
+			-1.0f, -1.0f, 0.0f, 1.0f };
 	m_quad_vbo.Initialize();
 	m_quad_vbo.Storage(quad_vertices, quad_vertices + 24, 0);
 	m_quad_vao.Initialize(0, 2, 1, 2);
@@ -137,7 +140,6 @@ void ScreenQuad::Initialize()
 
 void ScreenQuad::Render(const mygl3::Texture2D &tex) const
 {
-	glEnable(GL_CULL_FACE);
 	m_shader.Use();
 	tex.Bind(0);
 	m_quad_vao.DrawArrays(GL_TRIANGLES);

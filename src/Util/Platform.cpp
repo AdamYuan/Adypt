@@ -5,9 +5,19 @@
 #include "Platform.hpp"
 #include <fstream>
 #include <map>
+#include <cstring>
 
 void Platform::Load(const char *filename)
 {
+	//parse name
+	{
+		const char *s = filename + strlen(filename);
+		while(*(s - 1) != '/' && *(s - 1) != '\\' && s > filename) s --;
+		m_name = {s, filename + strlen(filename)};
+
+		auto p = m_name.find_last_of('.');
+		m_name = m_name.substr(0, p);
+	}
 	std::map<std::string, std::string> dict;
 
 	//parse file to dict
@@ -41,8 +51,14 @@ void Platform::Load(const char *filename)
 	//pt
 	parse_int(&dict, "pt.stacksize", &m_pt_config.m_stack_size);
 	parse_int(&dict, "pt.invocationsize", &m_pt_config.m_invocation_size);
-	parse_float(&dict, "pt.raytmin", &m_pt_config.m_ray_tmin);
 	parse_int(&dict, "pt.maxbounce", &m_pt_config.m_max_bounce);
+	parse_int(&dict, "pt.subpixel", &m_pt_config.m_subpixel);
+	parse_int(&dict, "pt.tmplifetime", &m_pt_config.m_tmp_lifetime);
+	parse_float(&dict, "pt.raytmin", &m_pt_config.m_ray_tmin);
+	parse_float(&dict, "pt.minglossyexp", &m_pt_config.m_min_glossy_exp);
+	parse_float(&dict, "pt.sun.r", &m_pt_config.m_sun_r);
+	parse_float(&dict, "pt.sun.g", &m_pt_config.m_sun_g);
+	parse_float(&dict, "pt.sun.b", &m_pt_config.m_sun_b);
 
 	//ui
 	parse_int(&dict, "ui.width", &m_ui_config.m_width);
