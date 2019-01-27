@@ -36,7 +36,7 @@ public:
 	{
 		int32_t m_invocation_size = 8, m_stack_size = 24, m_max_bounce = 5,
 			m_subpixel = 8, m_tmp_lifetime = 16; //each TMP_LIFETIME frame, refresh primary ray buffer
-		float m_ray_tmin = 0.0001f, m_min_glossy_exp = 4.0f; //enable glossy reflection only if exp exceeds MIN_GLOSSY_EXP
+		float m_ray_tmin = 0.0001f, m_min_glossy_exp = 4.0f, m_clamp = 4.0f; //enable glossy reflection only if exp exceeds MIN_GLOSSY_EXP
 		float m_sun_r = 6.0f, m_sun_g = 5.6f, m_sun_b = 5.2f; //ambient color of the sun
 	};
 //interface configuration

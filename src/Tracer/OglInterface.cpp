@@ -122,8 +122,22 @@ void OglInterface::cam_control()
 void ScreenQuad::Initialize()
 {
 	m_shader.Initialize();
-	m_shader.LoadFromFile("shaders/quad.vert", GL_VERTEX_SHADER);
-	m_shader.LoadFromFile("shaders/quad.frag", GL_FRAGMENT_SHADER);
+	m_shader.Load(
+			"#version 450 core\n"
+			"layout (location = 0) in vec2 aPosition;\n"
+			"layout (location = 1) in vec2 aTexcoords;\n"
+			"out vec2 vTexcoords;\n"
+			"void main() {\n"
+			"gl_Position = vec4(aPosition, 1.0, 1.0);\n"
+			"vTexcoords = aTexcoords; }\n",
+			GL_VERTEX_SHADER);
+	m_shader.Load(
+			"#version 450 core\n"
+			"out vec4 FragColor;\n"
+			"in vec2 vTexcoords;\n"
+			"layout (binding = 0) uniform sampler2D uTexture;\n"
+			"void main() { FragColor = vec4(pow(texture(uTexture, vTexcoords).rgb, vec3(1.0 / 2.2)), 1.0f); }\n",
+			GL_FRAGMENT_SHADER);
 
 	constexpr float quad_vertices[] {
 			-1.0f, -1.0f, 0.0f, 1.0f,

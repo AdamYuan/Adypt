@@ -138,6 +138,7 @@ std::string OglPathTracer::generate_shader_head()
 			"#define TMP_LIFETIME %d\n"
 			"#define RAY_TMIN %lf\n"
 			"#define MIN_GLOSSY_EXP %lf\n"
+			"#define CLAMP %lf\n"
 			"#define SUN vec3(%lf, %lf, %lf)\n"
 			"layout (local_size_x = %d, local_size_y = %d) in;\n",
 			m_uiwidth, m_uiheight,
@@ -148,6 +149,7 @@ std::string OglPathTracer::generate_shader_head()
 			m_config.m_tmp_lifetime,
 			m_config.m_ray_tmin,
 			m_config.m_min_glossy_exp,
+			m_config.m_clamp,
 			m_config.m_sun_r, m_config.m_sun_g, m_config.m_sun_b,
 			m_config.m_invocation_size, m_config.m_invocation_size
 			);

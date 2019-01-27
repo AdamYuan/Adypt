@@ -7,7 +7,6 @@ set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 include_directories(dep)
 add_definitions(-DSTB_IMAGE_WRITE_IMPLEMENTATION -DGLM_FORCE_SWIZZLE)
 
-find_package(Threads REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
@@ -19,4 +18,4 @@ add_executable(
 		dep/GL/gl3w.c
 		${SOURCE_FILES})
 
-target_link_libraries(Adypt ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS} ${OPENGL_LIBRARIES} glfw)
+target_link_libraries(Adypt ${CMAKE_DL_LIBS} ${OPENGL_LIBRARIES} glfw)

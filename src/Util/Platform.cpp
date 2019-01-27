@@ -59,6 +59,7 @@ void Platform::Load(const char *filename)
 	parse_float(&dict, "pt.sun.r", &m_pt_config.m_sun_r);
 	parse_float(&dict, "pt.sun.g", &m_pt_config.m_sun_g);
 	parse_float(&dict, "pt.sun.b", &m_pt_config.m_sun_b);
+	parse_float(&dict, "pt.clamp", &m_pt_config.m_clamp);
 
 	//ui
 	parse_int(&dict, "ui.width", &m_ui_config.m_width);

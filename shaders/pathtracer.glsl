@@ -46,7 +46,7 @@ layout(std430, binding = 5) buffer uuSobol { vec2 uSobol[]; };
 //args
 layout(std140, binding = 0) uniform uuArgs
 {
-	int uIteration;
+	int uIteration; 
 	float uPosX, uPosY, uPosZ;
 	mat4 uInvProjection;
 	mat4 uInvView;
@@ -408,8 +408,8 @@ vec3 Render(vec3 origin, vec3 dir)
 					vec3 r = reflect(dir, normal), s = SampleHemisphere(b, e);
 					dir = AlignDirection(s, r);
 					if(dot(dir, normal) < 0.0f) return ret;
-
 					color *= diffuse + specular*pow(dot(dir, r), e);
+					origin += r*RAY_TMIN;
 					break;
 				} //else do diffuse 
 			case 1: //diffuse only
@@ -450,11 +450,15 @@ vec3 Render(vec3 origin, vec3 dir)
 				}
 				float cos2 = 1.0 - eta*eta * (1.0 - cosi*cosi);
 				if(cos2 > 0 && Sobol(b).x >= fresnel)
+				{
 					dir = normalize(dir*eta + normal * (eta*cosi + sqrt(cos2)));
+					normal = -normal;
+				}
 				else
 					dir = reflect(dir, normal);
 				break;
 		}
+		origin += normal*RAY_TMIN;
 	}
 	return ret;
 }
@@ -496,7 +500,7 @@ void main()
 	}
 	else //progress rendering
 	{
-		vec3 color = Render(origin, Camera( SubPixel() ));
+		vec3 color = clamp(Render(origin, Camera( SubPixel() )), vec3(0.0), vec3(CLAMP));
 		color = (imageLoad(uOutImg, kPixel).xyz*uIteration + color) / float(uIteration + 1);
 		imageStore(uOutImg, kPixel, vec4(color, 1.0f));
 	}
