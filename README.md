@@ -1,7 +1,16 @@
 # Adypt
 AdamYuan's PathTracer on GPU. Implemented with OpenGL 4.5.
 
+## Compilation
+```bash
+cmake . -DCMAKE_BUILD_TYPE=Release
+make
+```
+
 ## Usage
+```bash
+./Adypt [*.config]
+```
 * W, A, S, D, L-Shift, Space: Move around
 * Esc: Toggle window focus
 * R: Toggle path tracing
