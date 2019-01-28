@@ -12,9 +12,7 @@ make
 ./Adypt [*.config]
 ```
 * W, A, S, D, L-Shift, Space: Move around
-* Esc: Toggle window focus
-* R: Toggle path tracing
-* P: Save image to exr file
+* Drag Mouse to change direction
 
 ## Built With
 * [GL3W](https://github.com/skaslev/gl3w) - For modern OpenGL methods
@@ -23,6 +21,7 @@ make
 * [stb_image](https://github.com/nothings/stb/blob/master/stb_image.h) - Image loading
 * [TinyOBJLoader](https://github.com/syoyo/tinyobjloader) - Obj loading
 * [TinyEXR](https://github.com/syoyo/tinyexr) - EXR file saving
+* [ImGui](https://github.com/ocornut/imgui) - UI rendering
 
 
 ## Reference
@@ -32,9 +31,6 @@ make
 * http://e-maxx.ru/algo/assignment_hungary#6 - Elegant implementation of hungarian assignment algorithm
 
 ## Screenshots
-![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/firepalace3.png)
-![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/livingroom1.png)
-![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/cornell_water1.png)
-![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/sponza3.png)
-![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/san3.png)
+![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/1.png)
+![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/2.png)
 

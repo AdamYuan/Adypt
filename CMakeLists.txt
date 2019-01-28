@@ -10,12 +10,11 @@ add_definitions(-DSTB_IMAGE_WRITE_IMPLEMENTATION -DGLM_FORCE_SWIZZLE)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
-file(GLOB SOURCE_FILES src/main.cpp src/BVH/*.* src/Util/*.* src/Tracer/*.*)
+file(GLOB SOURCE_FILES src/main.cpp src/BVH/*.* src/Util/*.* src/Tracer/*.*
+		dep/imgui/*.* dep/mygl3/texture.cpp dep/GL/gl3w.c)
 
 add_executable(
 		Adypt
-		dep/mygl3/texture.cpp
-		dep/GL/gl3w.c
 		${SOURCE_FILES})
 
 target_link_libraries(Adypt ${CMAKE_DL_LIBS} ${OPENGL_LIBRARIES} glfw)

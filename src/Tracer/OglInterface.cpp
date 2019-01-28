@@ -1,6 +1,9 @@
 #include <GL/gl3w.h>
 #include "OglInterface.hpp"
 #include "../BVH/WideBVH.hpp"
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 void OglInterface::Initialize(const Platform &platform, const Scene &scene, const WideBVH &bvh)
 {
@@ -16,27 +19,42 @@ void OglInterface::Initialize(const Platform &platform, const Scene &scene, cons
 	m_projection = glm::perspective(glm::radians(m_config.m_fov), m_config.m_width / (float)m_config.m_height, 0.1f,
 									glm::length(m_oglscene.GetAABB().GetExtent()));
 	m_path_tracer.Initialize(platform, m_oglscene);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+	ImGui_ImplOpenGL3_Init("#version 450 core");
 }
 
 void OglInterface::Run()
 {
-	char title[32];
 	while(!glfwWindowShouldClose(m_window))
 	{
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		m_fps.Update();
-		sprintf(title, "fps: %f [%d spp]",
-				m_fps.GetFps(), m_path_tracer.GetSPP());
-		glfwSetWindowTitle(m_window, title);
-		if(m_control && !m_rendering_flag)
+
+		ui_main_menubar();
+		if(m_show_info_overlay) ui_info_overlay();
+
+		//update camera if not in rendering
+		if(!m_path_tracer.PathTracingFlag())
 		{
 			cam_control();
-			m_path_tracer.UpdateCamera(m_oglscene, m_projection, m_camera.GetMatrix(), m_camera.GetPosition());
+			m_path_tracer.UpdateCamera(m_projection, m_camera.GetMatrix(), m_camera.GetPosition());
 		}
-		if(m_rendering_flag)
-			m_path_tracer.Render();
+
+		m_path_tracer.Render();
 
 		glClear(GL_COLOR_BUFFER_BIT);
 		m_screenquad.Render(m_path_tracer.GetResult());
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(m_window);
 		glfwPollEvents();
@@ -50,49 +68,12 @@ void OglInterface::init_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	m_window = glfwCreateWindow(m_config.m_width,
-								m_config.m_height, "", nullptr, nullptr);
+	m_window = glfwCreateWindow(m_config.m_width, m_config.m_height, "Adypt", nullptr, nullptr);
 	glfwMakeContextCurrent(m_window);
 	glfwSetWindowUserPointer(m_window, (void*)this);
 	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-	glfwSetKeyCallback(m_window, key_callback);
-	glfwSetWindowFocusCallback(m_window, focus_callback);
 
 	gl3wInit();
-	if(!gl3wIsSupported(4, 5))
-		printf("[GL] OpenGL 4.5 not supported\n");
-	if(!gl3wGetProcAddress("glGetTextureHandleARB"))
-		printf("[GL] Bindless texture not supported\n");
-
-}
-
-void OglInterface::key_callback(GLFWwindow *window, int key, int, int action, int)
-{
-	auto *app = (OglInterface *)glfwGetWindowUserPointer(window);
-	if(action == GLFW_PRESS)
-	{
-		if(key == GLFW_KEY_ESCAPE)
-		{
-			app->m_control = !app->m_control;
-			glfwSetCursorPos(window, (float)app->m_config.m_width / 2,
-							 (float)app->m_config.m_height / 2);
-			glfwSetInputMode(window, GLFW_CURSOR, app->m_control ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
-		}
-		else if(key == GLFW_KEY_R)
-			app->m_rendering_flag = !app->m_rendering_flag;
-		else if(key == GLFW_KEY_P)
-			app->m_path_tracer.SaveResult(app->m_model_name.c_str());
-	}
-}
-
-void OglInterface::focus_callback(GLFWwindow *window, int focused)
-{
-	auto *app = (OglInterface *)glfwGetWindowUserPointer(window);
-	if(focused == GLFW_FALSE)
-	{
-		app->m_control = false;
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	}
 }
 
 void OglInterface::cam_control()
@@ -112,11 +93,62 @@ void OglInterface::cam_control()
 	if(glfwGetKey(m_window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		m_camera.MoveUp(-speed);
 
-	double mouse_x, mouse_y;
-	glfwGetCursorPos(m_window, &mouse_x, &mouse_y);
-	m_camera.MouseControl((float)(mouse_x - m_config.m_width / 2), (float)(mouse_y - m_config.m_height / 2),
-						  m_config.m_mouse_sensitive);
-	glfwSetCursorPos(m_window, m_config.m_width / 2, m_config.m_height / 2);
+	static ImVec2 last_pos;
+	if(glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT))
+	{
+		ImVec2 cur_pos = ImGui::GetMousePos();
+		m_camera.MouseControl(cur_pos.x - last_pos.x, cur_pos.y - last_pos.y, m_config.m_mouse_sensitive);
+		last_pos = cur_pos;
+	} else
+		last_pos = ImGui::GetMousePos();
+}
+
+void OglInterface::ui_info_overlay()
+{
+	ImGui::SetNextWindowPos(ImVec2(10.0f, ImGui::GetIO().DisplaySize.y - 10.0f),
+							ImGuiCond_Always, ImVec2(0, 1));
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.3f)); // Transparent background
+	if (ImGui::Begin("INFO", nullptr,
+					 ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize
+					 |ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings))
+	{
+		ImGui::Text("Renderer: %s", glGetString(GL_RENDERER));
+		ImGui::Text("OpenGL version: %s", glGetString(GL_VERSION));
+		ImGui::Text("FPS: %f", m_fps.GetFps());
+
+		if(m_path_tracer.PathTracingFlag())
+		{
+			ImGui::Text("Render SPP: %d", m_path_tracer.GetSPP());
+			ImGui::Text("Render Time: %ld sec", m_path_tracer.GetPathTracingTime());
+		}
+
+		ImGui::End();
+	}
+	ImGui::PopStyleColor();
+
+}
+
+void OglInterface::ui_main_menubar()
+{
+	ImGui::BeginMainMenuBar();
+	if(ImGui::BeginMenu("Window"))
+	{
+		ImGui::Checkbox("Info", &m_show_info_overlay);
+
+		ImGui::EndMenu();
+	}
+
+	if(ImGui::BeginMenu("View"))
+	{
+		ImGui::Checkbox("Tracer", &m_path_tracer.PathTracingFlag());
+
+		ImGui::EndMenu();
+	}
+
+	if(ImGui::MenuItem("SaveEXR"))
+		m_path_tracer.SaveResult(m_model_name.c_str());
+
+	ImGui::EndMainMenuBar();
 }
 
 void ScreenQuad::Initialize()

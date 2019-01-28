@@ -30,8 +30,6 @@ private:
 
 	//BVH m_bvh; Scene m_scene;
 	OglScene m_oglscene;
-	bool m_control{true}; //whether the window is under key or mouse control
-	bool m_rendering_flag{false}; //doing progressive render
 
 	ScreenQuad m_screenquad;
 	mygl3::Camera m_camera;
@@ -40,10 +38,12 @@ private:
 
 	OglPathTracer m_path_tracer;
 
+	bool m_show_info_overlay = true;
+	void ui_info_overlay();
+	void ui_main_menubar();
+
 	void init_window();
 	void cam_control();
-	static void key_callback(GLFWwindow *window, int key, int, int action, int);
-	static void focus_callback(GLFWwindow *window, int focused);
 public:
 	void Initialize(const Platform &platform, const Scene &scene, const WideBVH &bvh);
 	void Run();

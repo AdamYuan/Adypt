@@ -20,34 +20,37 @@ void OglPathTracer::Initialize(const Platform &platform, const OglScene &scene)
 	create_buffers();
 	create_shaders();
 	bind_buffers(scene);
+
 }
 
-void OglPathTracer::UpdateCamera(const OglScene &scene, const glm::mat4 &projection, const glm::mat4 &view,
-								 const glm::vec3 &position)
+void OglPathTracer::UpdateCamera(const glm::mat4 &projection, const glm::mat4 &view, const glm::vec3 &position)
 {
 	m_args->m_position = position;
 	m_args->m_inv_projection = glm::inverse(projection);
 	m_args->m_inv_view = glm::inverse(view);
-
-	//dont do progressive render
-	m_args->m_iteration = -1;
-	m_local_iteration = -1;
-
-	m_shader.Use();
-	glDispatchCompute(m_group_x, m_group_y, 1);
 }
 
 void OglPathTracer::Render()
 {
 	//clear image if first entry
-	if(m_local_iteration == -1)
+	if(m_path_tracing_flag)
 	{
-		glClearTexImage(m_result_tex.Get(), 0, GL_RGBA, GL_FLOAT, nullptr);
-		m_sobol_gen.Reset();
+		if(m_local_spp == -1)
+		{
+			glClearTexImage(m_result_tex.Get(), 0, GL_RGBA, GL_FLOAT, nullptr);
+			m_sobol_gen.Reset();
+			m_path_tracing_start_time = std::chrono::high_resolution_clock::now();
+		}
+		//dont do progressive render
+		m_sobol_gen.Next(m_sobol_seq);
+		m_args->m_spp = ++m_local_spp;
 	}
-	//dont do progressive render
-	m_sobol_gen.Next(m_sobol_seq);
-	m_args->m_iteration = ++m_local_iteration;
+	else
+	{
+		//dont do progressive render
+		m_args->m_spp = -1;
+		m_local_spp = -1;
+	}
 
 	m_shader.Use();
 	glDispatchCompute(m_group_x, m_group_y, 1);
@@ -75,8 +78,8 @@ void OglPathTracer::create_buffers()
 	m_args_buffer.Storage(sizeof(GPUShaderArgs), map_flags);
 	m_args = (GPUShaderArgs*)glMapNamedBufferRange(m_args_buffer.Get(), 0, sizeof(GPUShaderArgs), map_flags);
 	//set default args
-	m_args->m_iteration = -1;
-	m_local_iteration = -1;
+	m_args->m_spp = -1;
+	m_local_spp = -1;
 
 	m_sobol_gen.Reset(m_config.m_max_bounce * 2u);
 	m_sobol_buffer.Initialize();
@@ -164,7 +167,7 @@ void OglPathTracer::SaveResult(const char *name)
 	std::vector<GLfloat> pixels((size_t)size * 3);
 	glGetTextureImage(m_result_tex.Get(), 0, GL_RGB, GL_FLOAT, size * 3 * sizeof(GLfloat), pixels.data());
 
-	sprintf(filename, "%s-%dspp.exr", name, m_local_iteration);
+	sprintf(filename, "%s-%dspp.exr", name, m_local_spp);
 
 	if(SaveEXR(pixels.data(), m_uiwidth, m_uiheight, 3, true, filename, (const char**)(&err)) < 0)
 		printf("[PT]ERR: %s\n", err);

@@ -46,7 +46,7 @@ layout(std430, binding = 5) buffer uuSobol { vec2 uSobol[]; };
 //args
 layout(std140, binding = 0) uniform uuArgs
 {
-	int uIteration; 
+	int uSpp; 
 	float uPosX, uPosY, uPosZ;
 	mat4 uInvProjection;
 	mat4 uInvView;
@@ -373,7 +373,7 @@ vec3 Render(vec3 origin, vec3 dir)
 		else
 		{
 			vec4 tmp;
-			if(uIteration % TMP_LIFETIME > 0) //primary ray
+			if(uSpp % TMP_LIFETIME > 0) //primary ray
 			{
 				tmp = imageLoad(uPrimaryTmpImg, kPixel);
 				tri_idx = floatBitsToInt(tmp.x);
@@ -458,14 +458,14 @@ vec3 Render(vec3 origin, vec3 dir)
 					dir = reflect(dir, normal);
 				break;
 		}
-		origin += normal*RAY_TMIN;
+		//origin += normal*RAY_TMIN;
 	}
 	return ret;
 }
 
 vec2 SubPixel()
 {
-	int subpixel_idx = (uIteration / TMP_LIFETIME) % (SUB_PIXEL * SUB_PIXEL);
+	int subpixel_idx = (uSpp / TMP_LIFETIME) % (SUB_PIXEL * SUB_PIXEL);
 	const float unit = 1.0f / float(SUB_PIXEL);
 	return vec2((subpixel_idx / SUB_PIXEL)*unit, (subpixel_idx % SUB_PIXEL)*unit);
 }
@@ -482,7 +482,7 @@ void main()
 	if(kPixel.x >= IMG_SIZE.x || kPixel.y >= IMG_SIZE.y) return;
 
 	vec3 origin = vec3(uPosX, uPosY, uPosZ);
-	if(uIteration == -1) //only do primary rays
+	if(uSpp == -1) //only do primary rays
 	{
 		vec2 tri_uv; int tri_idx;
 		BVHIntersection(origin, Camera( vec2(0.5f) ), tri_idx, tri_uv);
@@ -501,7 +501,7 @@ void main()
 	else //progress rendering
 	{
 		vec3 color = clamp(Render(origin, Camera( SubPixel() )), vec3(0.0), vec3(CLAMP));
-		color = (imageLoad(uOutImg, kPixel).xyz*uIteration + color) / float(uIteration + 1);
+		color = (imageLoad(uOutImg, kPixel).xyz*uSpp + color) / float(uSpp + 1);
 		imageStore(uOutImg, kPixel, vec4(color, 1.0f));
 	}
 }
