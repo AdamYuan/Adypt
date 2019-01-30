@@ -56,9 +56,9 @@ void Platform::Load(const char *filename)
 	parse_int(&dict, "pt.tmplifetime", &m_pt_config.m_tmp_lifetime);
 	parse_float(&dict, "pt.raytmin", &m_pt_config.m_ray_tmin);
 	parse_float(&dict, "pt.minglossyexp", &m_pt_config.m_min_glossy_exp);
-	parse_float(&dict, "pt.sun.r", &m_pt_config.m_sun_r);
-	parse_float(&dict, "pt.sun.g", &m_pt_config.m_sun_g);
-	parse_float(&dict, "pt.sun.b", &m_pt_config.m_sun_b);
+	parse_float(&dict, "pt.sun.r", m_pt_config.m_sun);
+	parse_float(&dict, "pt.sun.g", m_pt_config.m_sun + 1);
+	parse_float(&dict, "pt.sun.b", m_pt_config.m_sun + 2);
 	parse_float(&dict, "pt.clamp", &m_pt_config.m_clamp);
 
 	//ui

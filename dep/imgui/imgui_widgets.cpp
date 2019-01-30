@@ -1905,7 +1905,19 @@ bool ImGui::DragScalar(const char* label, ImGuiDataType data_type, void* v, floa
     if (start_text_input || (g.ActiveId == id && g.ScalarAsInputTextId == id))
     {
         FocusableItemUnregister(window);
-        return InputScalarAsWidgetReplacement(frame_bb, id, label, data_type, v, format);
+        const bool ret = InputScalarAsWidgetReplacement(frame_bb, id, label, data_type, v, format);
+        //MODIFIED, to clamp value from input box
+		switch (data_type)
+		{
+			case ImGuiDataType_S32:    *(int*)v = ImClamp<int>(*(int*)v, *(int*)v_min, *(int*)v_max); break;
+			case ImGuiDataType_U32:    *(unsigned*)v = ImClamp<unsigned>(*(unsigned*)v, *(unsigned*)v_min, *(unsigned*)v_max); break;
+			case ImGuiDataType_S64:    *(long long*)v = ImClamp<long long>(*(long long*)v, *(long long*)v_min, *(long long*)v_max); break;
+			case ImGuiDataType_U64:    *(unsigned long long*)v = ImClamp<unsigned long long>(*(unsigned long long*)v, *(unsigned long long*)v_min, *(unsigned long long*)v_max); break;
+			case ImGuiDataType_Float:  *(float*)v = ImClamp<float>(*(float*)v, *(float*)v_min, *(float*)v_max); break;
+			case ImGuiDataType_Double: *(double*)v = ImClamp<double>(*(double*)v, *(double*)v_min, *(double*)v_max); break;
+			case ImGuiDataType_COUNT:  break;
+		}
+		return ret;
     }
 
     // Actual drag behavior

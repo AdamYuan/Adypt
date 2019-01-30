@@ -16,52 +16,74 @@
 
 class OglPathTracer
 {
+public:
+	enum ViewerTypes { kDiffuse = 0, kSpecular, kEmissive, kPTRadiance, kPTVisibiliy = 4, kNormal, kPosition };
 private:
-	struct GPUShaderArgs
-	{
-		GLint m_spp;
-		glm::vec3 m_position;
-		glm::mat4 m_inv_projection, m_inv_view;
-	} *m_args;
-
-	Platform::PTConfig m_config;
-
-	mygl3::Shader m_shader;
 	GLuint m_group_x, m_group_y;
 	int m_uiwidth, m_uiheight, m_texture_count;
+	Platform::PTConfig *m_config;
+	//shader args
+	struct CameraArgs
+	{
+		glm::vec4 m_origin_tmin;
+		glm::mat4 m_inv_projection, m_inv_view;
+	} *m_camera_args;
+	struct PathTracerArgs
+	{
+		GLint m_spp, m_subpixel, m_tmplife, m_max_bounce;
+		GLfloat m_clamp, m_sun[3];
+	} *m_pt_args;
+	GLint m_pt_local_spp;
+	struct ViewerArgs
+	{
+		GLint m_type;
+	} *m_viewer_args;
+	ViewerTypes m_viewer_type = ViewerTypes::kDiffuse;
+
+	mygl3::Shader m_pt_shader, //path tracer
+			m_primaryray_shader, //trace primary ray
+			m_screen_shader; //render a screen quad to show result
+
+	mygl3::VertexArray m_screen_vao;
+	mygl3::Buffer m_screen_vbo;
 
 	mygl3::Texture2D m_result_tex, m_sobol_bias_tex, m_primary_tmp_tex;
-	mygl3::Buffer m_sobol_buffer, m_args_buffer;
+	mygl3::Buffer m_camera_args_buffer, m_pt_args_buffer, m_viewer_args_buffer;
 
-	GLfloat *m_sobol_seq;
+	//sobol
 	Sobol m_sobol_gen;
-
-	GLint m_local_spp;
+	mygl3::Buffer m_sobol_buffer; GLfloat *m_sobol_seq;
 
 	void create_shaders();
 	void create_buffers();
 	void bind_buffers(const OglScene &scene);
-	std::string generate_shader_head();
 
-	bool m_path_tracing_flag = false;
-	std::chrono::time_point<std::chrono::high_resolution_clock> m_path_tracing_start_time;
+	void update_config_args(); //apply changes
+
+	bool m_tracing_flag = false;
+	std::chrono::time_point<std::chrono::high_resolution_clock> m_tracing_start_time;
 
 public:
-	void Initialize(const Platform &platform, const OglScene &scene);
-	void UpdateCamera(const glm::mat4 &projection, const glm::mat4 &view, const glm::vec3 &position);
-	void Render();
+
+	void Initialize(Platform::PTConfig *config, const OglScene &scene, int width, int height);
+	void SetCamera(const glm::mat4 &projection, const glm::mat4 &view, const glm::vec3 &position);
+	void Update();
+
 	const mygl3::Texture2D &GetResult() { return m_result_tex; }
 	void SaveResult(const char *name);
 
-	bool &PathTracingFlag() { return m_path_tracing_flag; }
-	const bool &PathTracingFlag() const { return m_path_tracing_flag; }
+	bool &IsTracing() { return m_tracing_flag; }
+	const bool &IsTracing() const { return m_tracing_flag; }
 
-	int GetSPP() const { return m_local_spp; }
+	ViewerTypes &ViewerType() { return m_viewer_type; }
+	const ViewerTypes &ViewerType() const { return m_viewer_type; }
 
-	long GetPathTracingTime() const
+	int GetSPP() const { return m_pt_local_spp; }
+
+	long GetTracingSec() const
 	{
 		return std::chrono::duration_cast<std::chrono::seconds>
-		        (std::chrono::high_resolution_clock::now() - m_path_tracing_start_time).count();
+				(std::chrono::high_resolution_clock::now() - m_tracing_start_time).count();
 	}
 };
 

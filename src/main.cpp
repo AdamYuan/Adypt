@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 			wbvh.Save(pf.GetBVHFilename());
 		}
 
-		ui.Initialize(pf, scene, wbvh);
+		ui.Initialize(&pf, scene, wbvh);
 	}
 	ui.Run();
 

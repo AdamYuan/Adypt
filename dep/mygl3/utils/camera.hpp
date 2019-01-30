@@ -60,6 +60,7 @@ namespace mygl3
 			x_offset *= sensitivity; y_offset *= sensitivity;
 			yaw_ -= x_offset; pitch_ -= y_offset;
 			pitch_ = glm::clamp(pitch_, -90.0f, 90.0f);
+			yaw_ = glm::mod(yaw_, 360.0f);
 		}
 	};
 }

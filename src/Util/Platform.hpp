@@ -34,10 +34,10 @@ public:
 //gpu path tracer configuration
 	struct PTConfig
 	{
-		int32_t m_invocation_size = 8, m_stack_size = 24, m_max_bounce = 5,
+		int32_t m_invocation_size = 8, m_stack_size = 12, m_max_bounce = 5,
 			m_subpixel = 8, m_tmp_lifetime = 16; //each TMP_LIFETIME frame, refresh primary ray buffer
 		float m_ray_tmin = 0.0001f, m_min_glossy_exp = 4.0f, m_clamp = 4.0f; //enable glossy reflection only if exp exceeds MIN_GLOSSY_EXP
-		float m_sun_r = 6.0f, m_sun_g = 5.6f, m_sun_b = 5.2f; //ambient color of the sun
+		float m_sun[3] = {6.0f, 5.6f, 5.2f};
 	};
 //interface configuration
 	struct UIConfig
@@ -59,6 +59,9 @@ public:
 	const BVHConfig &GetBVHConfig() const { return m_bvh_config; }
 	const PTConfig &GetPTConfig() const { return m_pt_config; }
 	const UIConfig &GetUIConfig() const { return m_ui_config; }
+	BVHConfig &GetBVHConfig() { return m_bvh_config; }
+	PTConfig &GetPTConfig() { return m_pt_config; }
+	UIConfig &GetUIConfig() { return m_ui_config; }
 	const char *GetObjFilename() const { return m_obj_filename.c_str(); }
 	const char *GetBVHFilename() const { return m_bvh_filename.c_str(); }
 	const char *GetName() const { return m_name.c_str(); }
