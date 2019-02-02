@@ -5,7 +5,7 @@
 #ifndef YART_SBVHBUILDER_HPP
 #define YART_SBVHBUILDER_HPP
 
-#include "../Util/Scene.hpp"
+#include "../InstanceConfig.hpp"
 #include "SBVH.hpp"
 #include <glm/gtx/compatibility.hpp>
 #include <algorithm>
@@ -24,6 +24,7 @@ private:
 
 	SBVH *m_bvh;
 	const Scene &m_scene;
+	const InstanceConfig::BVH &m_config;
 
 	SpatialBin m_spatial_bins[kSpatialBinNum];
 
@@ -52,9 +53,9 @@ private:
 	inline int push_node() { m_bvh->m_nodes.emplace_back(); return m_bvh->m_nodes.size() - 1; }
 
 public:
-	SBVHBuilder(const Platform::BVHConfig &config, SBVH *bvh, const Scene &scene) : m_scene(scene), m_bvh(bvh)
+	SBVHBuilder(const InstanceConfig::BVH &config, SBVH *bvh, const Scene &scene)
+			: m_scene(scene), m_bvh(bvh), m_config(config)
 	{
-		m_bvh->m_config = config;
 		m_bvh->m_leaves_cnt = 0;
 		m_bvh->m_nodes.clear();
 	}
@@ -108,8 +109,8 @@ void SBVHBuilder::__find_object_split_dim(const SBVHBuilder::NodeSpec &t_spec, S
 	AABB left_aabb = refs->m_aabb;
 	for(int i = 1; i <= t_spec.m_ref_num - 1; ++i)
 	{
-		float sah = t_node_sah + m_bvh->m_config.GetTriangleCost(i) * left_aabb.GetArea() +
-				m_bvh->m_config.GetTriangleCost(t_spec.m_ref_num - i) * m_right_aabbs[i].GetArea();
+		float sah = t_node_sah + m_config.GetTriangleCost(i) * left_aabb.GetArea() +
+					m_config.GetTriangleCost(t_spec.m_ref_num - i) * m_right_aabbs[i].GetArea();
 		if(sah < t_os->m_sah)
 		{
 			t_os->m_dim = DIM;
@@ -205,8 +206,8 @@ void SBVHBuilder::__find_spatial_split_dim(const SBVHBuilder::NodeSpec &t_spec, 
 		left_num += m_spatial_bins[i - 1].m_in;
 		right_num -= m_spatial_bins[i - 1].m_out;
 
-		float sah = t_node_sah + m_bvh->m_config.GetTriangleCost(left_num) * left_aabb.GetArea() +
-				m_bvh->m_config.GetTriangleCost(right_num) * m_right_aabbs[i].GetArea();
+		float sah = t_node_sah + m_config.GetTriangleCost(left_num) * left_aabb.GetArea() +
+					m_config.GetTriangleCost(right_num) * m_right_aabbs[i].GetArea();
 		if(sah < t_ss->m_sah)
 		{
 			t_ss->m_sah = sah;
@@ -272,10 +273,10 @@ void SBVHBuilder::perform_spatial_split(const SBVHBuilder::NodeSpec &t_spec, con
 		ldb.Expand(left_ref.m_aabb);
 		rdb.Expand(right_ref.m_aabb);
 
-		float lac = m_bvh->m_config.GetTriangleCost(left_end - left_begin);
-		float rac = m_bvh->m_config.GetTriangleCost(right_end - right_begin);
-		float lbc = m_bvh->m_config.GetTriangleCost(1 + left_end - left_begin);
-		float rbc = m_bvh->m_config.GetTriangleCost(1 + right_end - right_begin);
+		float lac = m_config.GetTriangleCost(left_end - left_begin);
+		float rac = m_config.GetTriangleCost(right_end - right_begin);
+		float lbc = m_config.GetTriangleCost(1 + left_end - left_begin);
+		float rbc = m_config.GetTriangleCost(1 + right_end - right_begin);
 
 		float unsplit_left_sah = lub.GetArea() * lbc + t_right->m_aabb.GetArea() * rac;
 		float unsplit_right_sah = t_left->m_aabb.GetArea() * lac + rub.GetArea() * rbc;

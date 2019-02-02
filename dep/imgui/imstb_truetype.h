@@ -96,7 +96,7 @@
 //           stbtt_PackEnd()
 //           stbtt_GetPackedQuad()
 //
-//   "Load" a font file from a memory buffer (you have to keep the buffer loaded)
+//   "LoadFromFile" a font file from a memory buffer (you have to keep the buffer loaded)
 //           stbtt_InitFont()
 //           stbtt_GetFontOffsetForIndex()        -- indexing for TTC font collections
 //           stbtt_GetNumberOfFonts()             -- number of fonts for TTC font collections

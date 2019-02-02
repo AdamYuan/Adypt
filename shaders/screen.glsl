@@ -16,8 +16,6 @@ void main() {
 	vec4 v = imageLoad(uTexture, ivec2(vTexcoords));
 	if(uType <= 3) //diffuse, specular, emissive, pt_radiance
 		FragColor = vec4(pow(v.xyz, vec3(1.0 / 2.2)), 1.0f); 
-	else if(uType == 4) //pt_radiance
-		FragColor = vec4(vec3(pow(v.w, 1.0 / 2.2)), 1.0f);
 	else //normal, position
 		FragColor = vec4(normalize(v.xyz)*0.5f + 0.5f, 1.0f); 
 }

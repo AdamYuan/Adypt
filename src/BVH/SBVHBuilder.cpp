@@ -10,14 +10,14 @@ int SBVHBuilder::build_node(const NodeSpec &t_spec, int t_depth)
 	if(t_spec.m_ref_num == 1) return build_leaf(t_spec);
 
 	float area = t_spec.m_aabb.GetArea();
-	float node_sah = area * m_bvh->m_config.GetNodeCost(2); //C_t * SA(B)
+	float node_sah = area * m_config.GetNodeCost(2); //C_t * SA(B)
 
 	ObjectSplit object_split;
 	find_object_split(t_spec, &object_split, node_sah);
 
 	SpatialSplit spatial_split;
 	spatial_split.m_sah = FLT_MAX;
-	if(t_depth <= m_bvh->m_config.m_max_spatial_depth)
+	if(t_depth <= m_config.m_max_spatial_depth)
 	{
 		AABB overlap = object_split.m_left_aabb;
 		overlap.IntersectAABB(object_split.m_right_aabb);

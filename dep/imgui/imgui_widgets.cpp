@@ -5564,7 +5564,7 @@ void ImGui::EndMenuBar()
     IM_ASSERT(window->DC.MenuBarAppending);
     PopClipRect();
     PopID();
-    window->DC.MenuBarOffset.x = window->DC.CursorPos.x - window->MenuBarRect().Min.x; // Save horizontal position so next append can reuse it. This is kinda equivalent to a per-layer CursorPos.
+    window->DC.MenuBarOffset.x = window->DC.CursorPos.x - window->MenuBarRect().Min.x; // SaveToFile horizontal position so next append can reuse it. This is kinda equivalent to a per-layer CursorPos.
     window->DC.GroupStack.back().AdvanceCursor = false;
     EndGroup(); // Restore position on layer 0
     window->DC.LayoutType = ImGuiLayoutType_Vertical;

@@ -10,7 +10,7 @@ add_definitions(-DSTB_IMAGE_WRITE_IMPLEMENTATION -DGLM_FORCE_SWIZZLE)
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
-file(GLOB SOURCE_FILES src/main.cpp src/BVH/*.* src/Util/*.* src/Tracer/*.*
+file(GLOB SOURCE_FILES src/*.* src/BVH/*.* src/Util/*.* src/Tracer/*.*
 		dep/imgui/*.* dep/mygl3/texture.cpp dep/GL/gl3w.c)
 
 add_executable(

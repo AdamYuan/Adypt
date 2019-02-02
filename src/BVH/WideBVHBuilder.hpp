@@ -7,13 +7,14 @@
 
 #include "SBVH.hpp"
 #include "WideBVH.hpp"
-#include "../Util/Platform.hpp"
+#include "../InstanceConfig.hpp"
 
 //build wide bvh from a binary sbvh
 class WideBVHBuilder
 {
 private:
 	const SBVH &m_sbvh;
+	const InstanceConfig::BVH &m_config;
 	WideBVH *m_wbvh;
 
 	struct NodeCost
@@ -46,11 +47,11 @@ private:
 
 	void create_nodes(int wbvh_node_idx, int sbvh_node_idx);
 public:
-	WideBVHBuilder(const Platform::BVHConfig &config, WideBVH *wbvh, const SBVH &sbvh) : m_wbvh(wbvh), m_sbvh(sbvh)
+	WideBVHBuilder(const InstanceConfig::BVH &config, WideBVH *wbvh, const SBVH &sbvh)
+			: m_wbvh(wbvh), m_sbvh(sbvh), m_config(config)
 	{
 		m_wbvh->m_nodes.clear();
 		m_wbvh->m_tri_indices.clear();
-		m_wbvh->m_config = config;
 	}
 	void Run();
 };

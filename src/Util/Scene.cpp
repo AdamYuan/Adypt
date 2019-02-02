@@ -6,11 +6,17 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-void Scene::Load(const char *filename)
+bool Scene::LoadFromFile(const char *filename)
 {
 	//get base dir
 	{
-		const char *s = filename + strlen(filename);
+		size_t len = strlen(filename);
+		if(len == 0)
+		{
+			printf("[SCENE]Filename invalid\n");
+			return false;
+		}
+		const char *s = filename + len;
 		while(*(s - 1) != '/' && *(s - 1) != '\\' && s > filename) s --;
 		m_base_dir = {filename, s};
 	}
@@ -21,7 +27,7 @@ void Scene::Load(const char *filename)
 	if(!tinyobj::LoadObj(&attrib, &shapes, &m_materials, &err, filename, m_base_dir.c_str()))
 	{
 		printf("[SCENE]Failed to load %s\n", filename);
-		return;
+		return false;
 	}
 
 	if (!err.empty())
@@ -44,62 +50,71 @@ void Scene::Load(const char *filename)
 					tri.m_matid = shape.mesh.material_ids[face];
 
 					tinyobj::index_t index = shape.mesh.indices[index_offset + v];
-					tri.m_positions[0] = {
-							attrib.vertices[3 * index.vertex_index + 0],
-							attrib.vertices[3 * index.vertex_index + 1],
-							attrib.vertices[3 * index.vertex_index + 2]
-					};
-					if(~index.normal_index)
-						tri.m_normals[0] = {
-								attrib.normals[3 * index.normal_index + 0],
-								attrib.normals[3 * index.normal_index + 1],
-								attrib.normals[3 * index.normal_index + 2]
+					{
+						tri.m_positions[0] = {
+								attrib.vertices[3 * index.vertex_index + 0],
+								attrib.vertices[3 * index.vertex_index + 1],
+								attrib.vertices[3 * index.vertex_index + 2]
 						};
-					if(~index.texcoord_index)
-						tri.m_texcoords[0] = {
-								attrib.texcoords[2 * index.texcoord_index + 0],
-								1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-						};
+						if(~index.normal_index)
+							tri.m_normals[0] = {
+									attrib.normals[3 * index.normal_index + 0],
+									attrib.normals[3 * index.normal_index + 1],
+									attrib.normals[3 * index.normal_index + 2]
+							};
+
+						if(~index.texcoord_index)
+							tri.m_texcoords[0] = {
+									attrib.texcoords[2 * index.texcoord_index + 0],
+									1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+							};
+					}
 					index = shape.mesh.indices[index_offset + v + 1];
-					tri.m_positions[1] = {
-							attrib.vertices[3 * index.vertex_index + 0],
-							attrib.vertices[3 * index.vertex_index + 1],
-							attrib.vertices[3 * index.vertex_index + 2]
-					};
-					if(~index.normal_index)
-						tri.m_normals[1] = {
-								attrib.normals[3 * index.normal_index + 0],
-								attrib.normals[3 * index.normal_index + 1],
-								attrib.normals[3 * index.normal_index + 2]
+					{
+						tri.m_positions[1] = {
+								attrib.vertices[3 * index.vertex_index + 0],
+								attrib.vertices[3 * index.vertex_index + 1],
+								attrib.vertices[3 * index.vertex_index + 2]
 						};
-					if(~index.texcoord_index)
-						tri.m_texcoords[1] = {
-								attrib.texcoords[2 * index.texcoord_index + 0],
-								1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-						};
+						if(~index.normal_index)
+							tri.m_normals[1] = {
+									attrib.normals[3 * index.normal_index + 0],
+									attrib.normals[3 * index.normal_index + 1],
+									attrib.normals[3 * index.normal_index + 2]
+							};
+
+						if(~index.texcoord_index)
+							tri.m_texcoords[1] = {
+									attrib.texcoords[2 * index.texcoord_index + 0],
+									1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+							};
+					}
 
 					index = shape.mesh.indices[index_offset + v + 2];
-					tri.m_positions[2] = {
-							attrib.vertices[3 * index.vertex_index + 0],
-							attrib.vertices[3 * index.vertex_index + 1],
-							attrib.vertices[3 * index.vertex_index + 2]
-					};
-					if(~index.normal_index)
-						tri.m_normals[2] = {
-								attrib.normals[3 * index.normal_index + 0],
-								attrib.normals[3 * index.normal_index + 1],
-								attrib.normals[3 * index.normal_index + 2]
-						};
-					else //generate normal
 					{
+						tri.m_positions[2] = {
+								attrib.vertices[3 * index.vertex_index + 0],
+								attrib.vertices[3 * index.vertex_index + 1],
+								attrib.vertices[3 * index.vertex_index + 2]
+						};
+						if(~index.normal_index)
+							tri.m_normals[2] = {
+									attrib.normals[3 * index.normal_index + 0],
+									attrib.normals[3 * index.normal_index + 1],
+									attrib.normals[3 * index.normal_index + 2]
+							};
+
+						if(~index.texcoord_index)
+							tri.m_texcoords[2] = {
+									attrib.texcoords[2 * index.texcoord_index + 0],
+									1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+							};
+					}
+
+					//generate normal
+					if(index.normal_index == -1)
 						tri.m_normals[2] = tri.m_normals[0] = tri.m_normals[1] =
 								glm::normalize(glm::cross(tri.m_positions[1] - tri.m_positions[0], tri.m_positions[2] - tri.m_positions[0]));
-					}
-					if(~index.texcoord_index)
-						tri.m_texcoords[2] = {
-								attrib.texcoords[2 * index.texcoord_index + 0],
-								1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-						};
 				}
 				m_aabb.Expand(tri.GetAABB());
 			}
@@ -108,4 +123,6 @@ void Scene::Load(const char *filename)
 		}
 	}
 	printf("%ld triangles loaded from %s\n", m_triangles.size(), filename);
+
+	return true;
 }

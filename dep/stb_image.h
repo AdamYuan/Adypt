@@ -6526,7 +6526,7 @@ static float *stbi__hdr_load(stbi__context *s, int *x, int *y, int *comp, int re
    if (!hdr_data)
       return stbi__errpf("outofmem", "Out of memory");
 
-   // Load image data
+   // LoadFromFile image data
    // image data is stored as some number of sca
    if ( width < 8 || width >= 32768) {
       // Read flat data

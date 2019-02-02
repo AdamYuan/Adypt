@@ -85,14 +85,14 @@ void main()
 			color = vec3(mtl.m_sr, mtl.m_sg, mtl.m_sb);
 		else if(uType == 2) //emissive
 			color = vec3(mtl.m_er, mtl.m_eg, mtl.m_eb);
-		else if(uType == 5) //normal
+		else if(uType == 4) //normal
 		{
 			color = normalize(
 				vec3(tri.m_n1[0], tri.m_n1[1], tri.m_n1[2])*tri_uv.x +
 				vec3(tri.m_n2[0], tri.m_n2[1], tri.m_n2[2])*tri_uv.y + 
 				vec3(tri.m_n3[0], tri.m_n3[1], tri.m_n3[2])*(1.0 - tri_uv.x - tri_uv.y));
 		}
-		else if(uType == 6) //position
+		else if(uType == 5) //position
 		{
 			color = 
 				vec3(tri.m_p1[0], tri.m_p1[1], tri.m_p1[2])*tri_uv.x +

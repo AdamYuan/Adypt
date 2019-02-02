@@ -1289,7 +1289,7 @@ struct ImGuiIO
     float       KeyRepeatRate;                  // = 0.050f         // When holding a key/button, rate at which it repeats, in seconds.
     void*       UserData;                       // = NULL           // Store your own data for retrieval by callbacks.
 
-    ImFontAtlas*Fonts;                          // <auto>           // Load, rasterize and pack one or more fonts into a single texture.
+    ImFontAtlas*Fonts;                          // <auto>           // LoadFromFile, rasterize and pack one or more fonts into a single texture.
     float       FontGlobalScale;                // = 1.0f           // Global scale all fonts
     bool        FontAllowUserScaling;           // = false          // Allow user scaling text of individual window with CTRL+Wheel.
     ImFont*     FontDefault;                    // = NULL           // Font to use on NewFrame(). Use NULL to uses Fonts->Fonts[0].
@@ -1956,7 +1956,7 @@ enum ImFontAtlasFlags_
     ImFontAtlasFlags_NoMouseCursors     = 1 << 1    // Don't build software mouse cursors into the atlas
 };
 
-// Load and rasterize multiple TTF/OTF fonts into a same texture. The font atlas will build a single texture holding:
+// LoadFromFile and rasterize multiple TTF/OTF fonts into a same texture. The font atlas will build a single texture holding:
 //  - One or more fonts.
 //  - Custom graphics data needed to render the shapes needed by Dear ImGui.
 //  - Mouse cursor shapes for software cursor rendering (unless setting 'Flags |= ImFontAtlasFlags_NoMouseCursors' in the font atlas).

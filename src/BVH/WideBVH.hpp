@@ -7,7 +7,7 @@
 
 #include <cinttypes>
 #include <vector>
-#include "../Util/Platform.hpp"
+#include "../InstanceConfig.hpp"
 
 //a compressed 80 byte bvh node
 struct WideBVHNode
@@ -32,14 +32,10 @@ private:
 	static constexpr const char *kVersionStr = "CWBVH_1.0";
 	std::vector<WideBVHNode> m_nodes;
 	std::vector<int32_t> m_tri_indices;
-	Platform::BVHConfig m_config;
 public:
 	WideBVH() = default;
-	WideBVH(const char *filename) { Load(filename); }
-	void Load(const char *filename);
-	void Save(const char *filename);
-	bool Empty() const { return m_nodes.empty(); }
-	const Platform::BVHConfig &GetConfig() const { return m_config; }
+	bool LoadFromFile(const char *filename, const InstanceConfig::BVH &expected_config);
+	bool SaveToFile(const char *filename, const InstanceConfig::BVH &config);
 	const std::vector<WideBVHNode> &GetNodes() const { return m_nodes; }
 	const std::vector<int> &GetTriIndices() const { return m_tri_indices; }
 

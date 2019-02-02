@@ -29,7 +29,7 @@ int WideBVHBuilder::calculate_cost(int node_idx)
 	{
 		for (int i = 1; i <= 7; ++i)
 		{
-			m_costs[node_idx][i].m_sah = m_wbvh->m_config.GetTriangleCost(1) * area;
+			m_costs[node_idx][i].m_sah = m_config.GetTriangleCost(1) * area;
 			m_costs[node_idx][i].m_type = NodeCost::kLeaf;
 		}
 		return 1;
@@ -41,9 +41,9 @@ int WideBVHBuilder::calculate_cost(int node_idx)
 	auto &dp = m_costs[node_idx];
 
 	{ //for i = 1
-		float c_leaf = tri_count <= 3 ? area * m_wbvh->m_config.GetTriangleCost(tri_count) : FLT_MAX;
+		float c_leaf = tri_count <= 3 ? area * m_config.GetTriangleCost(tri_count) : FLT_MAX;
 		float c_internal = FLT_MAX;
-		float node_sah = area * m_wbvh->m_config.GetNodeCost(8);
+		float node_sah = area * m_config.GetNodeCost(8);
 		for(int k = 1; k < 8; ++k)
 		{
 			float r = node_sah + m_costs[lidx][k].m_sah + m_costs[ridx][8 - k].m_sah;

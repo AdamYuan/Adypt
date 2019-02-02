@@ -16,14 +16,14 @@ private:
 
 public:
 	Scene() = default;
-	Scene(const char *t_filename) { Load(t_filename); }
-	void Load(const char *filename);
+	Scene(const char *t_filename) { LoadFromFile(t_filename); }
+	bool LoadFromFile(const char *filename);
 
 	const std::vector<Triangle> &GetTriangles() const { return m_triangles; }
 	const std::vector<tinyobj::material_t> &GetTinyobjMaterials() const { return m_materials; }
 	const std::string &GetBasePath() const { return m_base_dir; };
 	const AABB &GetAABB() const { return m_aabb; }
-	//void Clear() { m_triangles.clear(); m_triangles.shrink_to_fit(); m_aabb = AABB(); }
+	void Clear() { m_triangles.clear(); m_triangles.shrink_to_fit(); m_aabb = AABB(); }
 };
 
 

@@ -18,10 +18,10 @@ int OglScene::load_texture(std::vector<mygl3::Texture2D> *textures,
 	auto loader = mygl3::ImageLoader(filename, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 4);
 	if(loader.GetInfo().data == nullptr)
 	{
-		printf("Unable to load texture %s\n", filename);
+		printf("[SCENE]Err: Unable to load texture %s\n", filename);
 		return -1;
 	}
-	printf("Loaded texture %s\n", filename);
+	printf("[SCENE]Info: Loaded texture %s\n", filename);
 	cur.Load(loader.GetInfo());
 	cur.SetWrapFilter(GL_REPEAT);
 	cur.SetSizeFilter(GL_LINEAR, GL_LINEAR);

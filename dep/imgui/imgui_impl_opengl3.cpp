@@ -25,7 +25,7 @@
 //  2018-02-23: OpenGL: Create the VAO in the render function so the setup can more easily be used with multiple shared GL context.
 //  2018-02-16: Misc: Obsoleted the io.RenderDrawListsFn callback and exposed ImGui_ImplSdlGL3_RenderDrawData() in the .h file so you can call it yourself.
 //  2018-01-07: OpenGL: Changed GLSL shader version from 330 to 150.
-//  2017-09-01: OpenGL: Save and restore current bound sampler. Save and restore current polygon mode.
+//  2017-09-01: OpenGL: Save and restore current bound sampler. SaveToFile and restore current polygon mode.
 //  2017-05-01: OpenGL: Fixed save and restore of current blend func state.
 //  2017-05-01: OpenGL: Fixed save and restore of current GL_ACTIVE_TEXTURE.
 //  2016-09-05: OpenGL: Fixed save and restore of current scissor rectangle.
@@ -289,7 +289,7 @@ bool ImGui_ImplOpenGL3_CreateFontsTexture()
     ImGuiIO& io = ImGui::GetIO();
     unsigned char* pixels;
     int width, height;
-    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // Load as RGBA 32-bits (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);   // LoadFromFile as RGBA 32-bits (75% of the memory is wasted, but default font is so small) because it is more likely to be compatible with user's existing shaders. If your ImTextureId represent a higher-level concept than just a GL texture id, consider calling GetTexDataAsAlpha8() instead to save on GPU memory.
 
     // Upload texture to graphics system
     GLint last_texture;

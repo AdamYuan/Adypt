@@ -183,7 +183,7 @@ CODE
      ImGuiIO& io = ImGui::GetIO();
      // TODO: Set optional io.ConfigFlags values, e.g. 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard' to enable keyboard controls.
      // TODO: Fill optional fields of the io structure later.
-     // TODO: Load TTF/OTF fonts if you don't want to use the default font.
+     // TODO: LoadFromFile TTF/OTF fonts if you don't want to use the default font.
 
      // Initialize helper Platform and Renderer bindings (here we are using imgui_impl_win32 and imgui_impl_dx11)
      ImGui_ImplWin32_Init(hwnd);
@@ -219,7 +219,7 @@ CODE
      ImGuiIO& io = ImGui::GetIO();
      // TODO: Set optional io.ConfigFlags values, e.g. 'io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard' to enable keyboard controls.
      // TODO: Fill optional fields of the io structure later.
-     // TODO: Load TTF/OTF fonts if you don't want to use the default font.
+     // TODO: LoadFromFile TTF/OTF fonts if you don't want to use the default font.
 
      // Build and load the texture atlas into a texture
      // (In the examples/ app this is usually done within the ImGui_ImplXXX_Init() function from one of the demo Renderer)
@@ -1485,7 +1485,7 @@ FILE* ImFileOpen(const char* filename, const char* mode)
 #endif
 }
 
-// Load file content into memory
+// LoadFromFile file content into memory
 // Memory allocated with ImGui::MemAlloc(), must be freed by user using ImGui::MemFree()
 void* ImFileLoadToMemory(const char* filename, const char* file_open_mode, size_t* out_file_size, int padding_bytes)
 {
@@ -3319,7 +3319,7 @@ void ImGui::NewFrame()
     if (g.IO.ConfigWindowsResizeFromEdges && !(g.IO.BackendFlags & ImGuiBackendFlags_HasMouseCursors))
         g.IO.ConfigWindowsResizeFromEdges = false;
 
-    // Load settings on first frame (if not explicitly loaded manually before)
+    // LoadFromFile settings on first frame (if not explicitly loaded manually before)
     if (!g.SettingsLoaded)
     {
         IM_ASSERT(g.SettingsWindows.empty());
@@ -3328,7 +3328,7 @@ void ImGui::NewFrame()
         g.SettingsLoaded = true;
     }
 
-    // Save settings (with a delay after the last modification, so we don't spam disk too much)
+    // SaveToFile settings (with a delay after the last modification, so we don't spam disk too much)
     if (g.SettingsDirtyTimer > 0.0f)
     {
         g.SettingsDirtyTimer -= g.IO.DeltaTime;
@@ -3508,7 +3508,7 @@ void ImGui::Shutdown(ImGuiContext* context)
     if (!g.Initialized)
         return;
 
-    // Save settings (unless we haven't attempted to load them: CreateContext/DestroyContext without a call to NewFrame shouldn't save an empty file)
+    // SaveToFile settings (unless we haven't attempted to load them: CreateContext/DestroyContext without a call to NewFrame shouldn't save an empty file)
     if (g.SettingsLoaded && g.IO.IniFilename != NULL)
     {
         ImGuiContext* backup_context = GImGui;
@@ -4361,7 +4361,7 @@ void ImGui::EndChildFrame()
     EndChild();
 }
 
-// Save and compare stack sizes on Begin()/End() to detect usage errors
+// SaveToFile and compare stack sizes on Begin()/End() to detect usage errors
 static void CheckStacksSize(ImGuiWindow* window, bool write)
 {
     // NOT checking: DC.ItemWidth, DC.AllowKeyboardFocus, DC.ButtonRepeat, DC.TextWrapPos (per window) to allow user to conveniently push once and not pop (they are cleared on Begin)
@@ -5286,7 +5286,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
             }
         }
 
-        // Save clipped aabb so we can access it in constant-time in FindHoveredWindow()
+        // SaveToFile clipped aabb so we can access it in constant-time in FindHoveredWindow()
         window->OuterRectClipped = window->Rect();
         window->OuterRectClipped.ClipWith(window->ClipRect);
 

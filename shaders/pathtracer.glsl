@@ -96,12 +96,11 @@ void FetchInfo(in const int tri_idx, in const vec2 tri_uv, out vec3 position, ou
 		diffuse = vec3(mtl.m_dr, mtl.m_dg, mtl.m_db);
 	specular = vec3(mtl.m_sr, mtl.m_sg, mtl.m_sb);
 }
-vec4 Render(vec4 origin, vec3 dir)
+vec3 Render(vec4 origin, vec3 dir)
 {
 	vec2 tri_uv; int tri_idx;
 
-	vec4 ret = vec4(0);
-	vec3 color = vec3(1), position, normal, emissive, diffuse, specular;
+	vec3 ret = vec3(0), color = vec3(1), position, normal, emissive, diffuse, specular;
 	Material mtl;
 	for(int b = 0; b < uMaxBounce; ++b)
 	{
@@ -128,13 +127,13 @@ vec4 Render(vec4 origin, vec3 dir)
 
 		if(tri_idx == -1)
 		{
-			ret.xyz += color * vec3(uSunR, uSunG, uSunB);
+			ret += color * vec3(uSunR, uSunG, uSunB);
 			break;
 		}
 
 		FetchInfo(tri_idx, tri_uv, position, normal, emissive, diffuse, specular, mtl);
 		origin.xyz = position;
-		ret.xyz += color * emissive;
+		ret += color * emissive;
 
 		switch(mtl.m_illum)
 		{
@@ -146,7 +145,6 @@ vec4 Render(vec4 origin, vec3 dir)
 					dir = AlignDirection(s, r);
 					if(dot(dir, normal) < 0.0f) return ret;
 					color *= diffuse + specular*pow(dot(dir, r), e);
-					//origin += r*hit_tmin;
 					break;
 				} //else do diffuse 
 			case 1: //diffuse only
@@ -195,9 +193,7 @@ vec4 Render(vec4 origin, vec3 dir)
 					dir = reflect(dir, normal);
 				break;
 		}
-		//origin += normal*hit_tmin;
 	}
-	if(ret.xyz != vec3(0.0)) ret.w = 1;
 	return ret;
 }
 
@@ -219,7 +215,7 @@ void main()
 {
 	if(kPixel.x >= IMG_SIZE.x || kPixel.y >= IMG_SIZE.y) return;
 
-	vec4 radiance = clamp(Render(uOrigin_TMin, Camera( SubPixel() )), vec4(0.0), vec4(uClamp));
-	radiance = (imageLoad(uOutImg, kPixel)*uSpp + radiance) / float(uSpp + 1);
-	imageStore(uOutImg, kPixel, radiance);
+	vec3 radiance = min(Render(uOrigin_TMin, Camera( SubPixel() )), vec3(uClamp));
+	radiance = (imageLoad(uOutImg, kPixel).xyz*uSpp + radiance) / float(uSpp + 1);
+	imageStore(uOutImg, kPixel, vec4(radiance, 1));
 }

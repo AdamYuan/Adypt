@@ -875,7 +875,7 @@ struct ImGuiContext
 
     // Settings
     bool                           SettingsLoaded;
-    float                          SettingsDirtyTimer;          // Save .ini Settings to memory when time reaches zero
+    float                          SettingsDirtyTimer;          // SaveToFile .ini Settings to memory when time reaches zero
     ImGuiTextBuffer                SettingsIniData;             // In memory .ini settings
     ImVector<ImGuiSettingsHandler> SettingsHandlers;            // List of .ini settings handlers
     ImVector<ImGuiWindowSettings>  SettingsWindows;             // ImGuiWindow .ini settings entries (parsed from the last loaded .ini file and maintained on saving)

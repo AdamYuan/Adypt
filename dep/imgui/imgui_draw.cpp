@@ -1576,7 +1576,7 @@ static void         Decode85(const unsigned char* src, unsigned char* dst)
     }
 }
 
-// Load embedded Roboto-Medium.ttf at size 16, disable oversampling
+// LoadFromFile embedded Roboto-Medium.ttf at size 16, disable oversampling
 ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* font_cfg_template)
 {
     ImFontConfig font_cfg = font_cfg_template ? *font_cfg_template : ImFontConfig();

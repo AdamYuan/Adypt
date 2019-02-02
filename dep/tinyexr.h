@@ -284,9 +284,9 @@ extern int IsEXR(const char *filename);
 // components must be 1(Grayscale), 3(RGB) or 4(RGBA).
 // Input image format is: `float x width x height`, or `float x RGB(A) x width x
 // hight`
-// Save image as fp16(HALF) format when `save_as_fp16` is positive non-zero
+// SaveToFile image as fp16(HALF) format when `save_as_fp16` is positive non-zero
 // value.
-// Save image as fp32(FLOAT) format when `save_as_fp16` is 0.
+// SaveToFile image as fp32(FLOAT) format when `save_as_fp16` is 0.
 // Use ZIP compression by default.
 // Returns negative value and may set error string in `err` when there's an
 // error
@@ -12955,7 +12955,7 @@ int LoadEXRMultipartImageFromMemory(EXRImage *exr_images,
   //   'unsigned int(4 bytes)' in OpenEXR implementation...
   //   http://www.openexr.com/openexrfilelayout.pdf
 
-  // Load chunk offset table.
+  // LoadFromFile chunk offset table.
   std::vector<std::vector<tinyexr::tinyexr_uint64> > chunk_offset_table_list;
   for (size_t i = 0; i < static_cast<size_t>(num_parts); i++) {
     std::vector<tinyexr::tinyexr_uint64> offset_table(

@@ -22,6 +22,8 @@ make
 * [TinyOBJLoader](https://github.com/syoyo/tinyobjloader) - Obj loading
 * [TinyEXR](https://github.com/syoyo/tinyexr) - EXR file saving
 * [ImGui](https://github.com/ocornut/imgui) - UI rendering
+* [RapidJSON](https://github.com/Tencent/rapidjson) - Load instance configuration
+* [portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs) - Call native file dialog (require Zenity on linux)
 
 
 ## Reference

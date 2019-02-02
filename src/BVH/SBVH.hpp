@@ -7,7 +7,6 @@
 
 #include <vector>
 #include "../Util/Scene.hpp"
-#include "../Util/Platform.hpp"
 
 struct SBVHNode //a bvh with only 1 primitive per node
 {
@@ -20,7 +19,6 @@ class SBVH
 private:
 	std::vector<SBVHNode> m_nodes;
 	int m_leaves_cnt;
-	Platform::BVHConfig m_config;
 
 public:
 	SBVH() = default;
@@ -31,7 +29,6 @@ public:
 	int GetRight(int idx) const { return idx + 1; }
 	int GetTriIdx(int idx) const { return m_nodes[idx].m_tri_idx; }
 	const AABB &GetBox(int idx) const { return m_nodes[idx].m_aabb; }
-	const Platform::BVHConfig &GetConfig() const { return m_config; }
 
 	int GetLeafCount() const { return m_leaves_cnt; }
 	friend class SBVHBuilder;
