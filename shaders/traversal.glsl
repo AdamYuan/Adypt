@@ -218,32 +218,28 @@ void BVHIntersection(in const vec4 origin_tmin, vec3 dir, inout int o_hit_tri_id
 
 			tv00 = uTriMatrices[tridx].m0;
 			tv11 = uTriMatrices[tridx].m1;
+			tv22 = uTriMatrices[tridx].m2;
 
 			toz = tv00.w - dot(origin, tv00.xyz);
 			tidz = 1.0 / dot(dir, tv00.xyz);
 			tt = toz * tidz;
 
+			tox = tv11.w + dot(origin, tv11.xyz);
+			tdx = dot(dir, tv11.xyz);
+			tu = tox + tt*tdx;
+
+			toy = tv22.w + dot(origin, tv22.xyz);
+			tdy = dot(dir, tv22.xyz);
+			tv = toy + tt*tdy;
+
 			if(tt > hit_tmin && tt < hit_t)
-			{
-				tox = tv11.w + dot(origin, tv11.xyz);
-				tdx = dot(dir, tv11.xyz);
-				tu = tox + tt*tdx;
-
 				if(tu >= 0.0 && tu <= 1.0)
-				{
-					tv22 = uTriMatrices[tridx].m2;
-					toy = tv22.w + dot(origin, tv22.xyz);
-					tdy = dot(dir, tv22.xyz);
-					tv = toy + tt*tdy;
-
 					if(tv >= 0.0 && tu + tv <= 1.0)
 					{
 						hit_t = tt;
 						o_hit_uv = vec2(tu, tv);
 						o_hit_tri_idx = int(tridx);
 					}
-				}
-			}
 		}
 
 		if(node_group.y <= 0x00ffffffu)

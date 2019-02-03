@@ -33,6 +33,8 @@ private:
 			m_tri_matrices_ssbo, m_material_ssbo, m_texture_handle_ubo;
 	std::vector<mygl3::Texture2D> m_textures;
 
+	//mygl3::Texture1D m_bvh_nodes_tex, m_tri_matrices_tex, m_tri_indices_tex;
+
 	int load_texture(std::vector<mygl3::Texture2D> *textures, std::map<std::string, int> &name_set,
 					 const char *filename);
 	void init_materials(const Scene &scene, std::vector<GPUMaterial> *materials,
@@ -45,9 +47,15 @@ public:
 	void Initialize(const Scene &scene, const WideBVH &bvh);
 
 	const mygl3::Buffer &GetTriangleBuffer() const { return m_triangles_ssbo; }
+
+	const mygl3::Buffer &GetBVHNodeBuffer() const { return m_bvh_nodes_ssbo; }
 	const mygl3::Buffer &GetTriMatrixBuffer() const { return m_tri_matrices_ssbo; }
 	const mygl3::Buffer &GetTriIndexBuffer() const { return m_tri_indices_ssbo; }
-	const mygl3::Buffer &GetBVHNodeBuffer() const { return m_bvh_nodes_ssbo; }
+
+	//const mygl3::Texture1D &GetTriMatrixTex() const { return m_tri_matrices_tex; }
+	//const mygl3::Texture1D &GetTriIndexTex() const { return m_tri_indices_tex; }
+	//const mygl3::Texture1D &GetBVHNodeTex() const { return m_bvh_nodes_tex; }
+
 	const mygl3::Buffer &GetMaterialBuffer() const { return m_material_ssbo; }
 	const mygl3::Buffer &GetTextureHandleBuffer() const { return m_texture_handle_ubo; }
 	const std::vector<mygl3::Texture2D> &GetTextures() const { return m_textures; }

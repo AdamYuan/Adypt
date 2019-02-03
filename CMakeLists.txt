@@ -11,7 +11,7 @@ find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
 
 file(GLOB SOURCE_FILES src/*.* src/BVH/*.* src/Util/*.* src/Tracer/*.*
-		dep/imgui/*.* dep/mygl3/texture.cpp dep/GL/gl3w.c)
+		dep/imgui/*.* dep/GL/gl3w.c)
 
 add_executable(
 		Adypt

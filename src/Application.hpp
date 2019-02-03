@@ -22,9 +22,7 @@ private:
 	std::unique_ptr<Instance> m_instance;
 
 	bool m_show_info_overlay = true;
-	bool m_show_camera_settings = false;
-	bool m_show_path_tracer_settings = false;
-	bool m_show_bvh_settings = false;
+	bool m_show_instance_settings = false;
 	void ui_control();
 	void ui_export_openexr_modal();
 	void ui_new_instance_modal();

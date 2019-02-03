@@ -5,6 +5,8 @@
 #include "OglScene.hpp"
 #include "../BVH/WideBVH.hpp"
 #include <stack>
+
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 int OglScene::load_texture(std::vector<mygl3::Texture2D> *textures,
@@ -12,19 +14,30 @@ int OglScene::load_texture(std::vector<mygl3::Texture2D> *textures,
 						   const char *filename)
 {
 	if(name_set.count(filename)) return name_set[filename];
+
 	textures->emplace_back();
-	auto &cur = textures->back();
+
+	mygl3::Texture2D &cur = textures->back();
 	cur.Initialize();
-	auto loader = mygl3::ImageLoader(filename, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 4);
-	if(loader.GetInfo().data == nullptr)
+
+	GLsizei width, height, channels;
+	GLvoid *data{};
+
+	data = stbi_load(filename, &width, &height, &channels, 3);
+	if(data == nullptr)
 	{
 		printf("[SCENE]Err: Unable to load texture %s\n", filename);
+		textures->pop_back();
 		return -1;
 	}
-	printf("[SCENE]Info: Loaded texture %s\n", filename);
-	cur.Load(loader.GetInfo());
+	cur.Storage(width, height, GL_RGB8);
+	cur.Data(data, width, height, GL_RGB, GL_UNSIGNED_BYTE);
+	stbi_image_free(data);
+
 	cur.SetWrapFilter(GL_REPEAT);
 	cur.SetSizeFilter(GL_LINEAR, GL_LINEAR);
+	printf("[SCENE]Info: Loaded texture %s\n", filename);
+
 	int idx = (int)textures->size() - 1;
 	return name_set[filename] = idx;
 }
@@ -122,5 +135,7 @@ void OglScene::create_buffers(const Scene &scene, const WideBVH &bvh)
 	m_material_ssbo.Storage(materials.data(), materials.data() + materials.size(), 0);
 	m_texture_handle_ubo.Initialize();
 	m_texture_handle_ubo.Storage(texture_handles.data(), texture_handles.data() + texture_handles.size(), 0);
+
+	//m_bvh_nodes_tex.Initialize();
 }
 

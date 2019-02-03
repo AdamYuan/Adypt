@@ -119,6 +119,11 @@ void Application::ui_general_settings(InstanceConfig *cfg)
 {
 	static char obj_name_buf[kFilenameBufSize]{}, bvh_name_buf[kFilenameBufSize]{};
 
+	if(strcmp(obj_name_buf, cfg->m_obj_filename.c_str()) != 0)
+		strcpy(obj_name_buf, cfg->m_obj_filename.c_str());
+	if(strcmp(bvh_name_buf, cfg->m_bvh_filename.c_str()) != 0)
+		strcpy(bvh_name_buf, cfg->m_bvh_filename.c_str());
+
 	if(comp_file_open("OBJ Filename", "...##2", obj_name_buf, kFilenameBufSize, "OBJ Filename",
 					  {"Wavefront OBJ File (.obj)", "*.obj", "All Files", "*"}))
 		cfg->m_obj_filename = obj_name_buf;
@@ -126,13 +131,13 @@ void Application::ui_general_settings(InstanceConfig *cfg)
 					  {"BVH File (.bvh)", "*.bvh", "All Files", "*"}))
 		cfg->m_bvh_filename = bvh_name_buf;
 
-	ImGui::DragInt("Width", &cfg->m_width, 8, 1, 3840);
-	ImGui::DragInt("Height", &cfg->m_height, 8, 1, 2160);
+	ImGui::DragInt("Width", &cfg->m_width, 8, 640, 3840);
+	ImGui::DragInt("Height", &cfg->m_height, 8, 480, 2160);
 }
 
 void Application::ui_bvh_settings(InstanceConfig::BVH *bvh_cfg)
 {
-	ImGui::DragInt("Max Spatial Depth", &bvh_cfg->m_max_spatial_depth, 1, 1, 128);
+	ImGui::DragInt("Max Spatial Depth", &bvh_cfg->m_max_spatial_depth, 1, 0, 128);
 	ImGui::DragFloat("Triangle SAH", &bvh_cfg->m_triangle_sah, 0.05f, 0.0f, 1.0f);
 	ImGui::DragFloat("Node SAH", &bvh_cfg->m_node_sah, 0.05f, 0.0f, 1.0f);
 }
@@ -173,15 +178,22 @@ void Application::ui_main_menubar()
 
 	if(ImGui::BeginMenu("File"))
 	{
-		if(ImGui::MenuItem("New"))
+		if(ImGui::MenuItem("New Instance"))
 			new_instance_popup = true;
-		if(ImGui::MenuItem("Open"))
+		if(ImGui::MenuItem("Open Instance"))
 			open_instance_popup = true;
+
 		if(m_instance)
 		{
+			if(ImGui::MenuItem("Reload Instance"))
+			{
+				std::string filename = m_instance->m_filename;
+				m_instance.reset(new Instance());
+				m_instance->InitializeFromFile(filename.c_str(), m_window);
+			}
 			if(ImGui::MenuItem("Save Instance"))
 				m_instance->SaveToFile();
-			if(ImGui::MenuItem("Export to OpenEXR"))
+			if(ImGui::MenuItem("Export OpenEXR"))
 				export_openexr_popup = true;
 		}
 
@@ -195,8 +207,7 @@ void Application::ui_main_menubar()
 		if(m_instance)
 		{
 			if(m_instance->m_enable_pt_flag) ui_push_disable();
-			ImGui::MenuItem("Camera Settings", nullptr, &m_show_camera_settings);
-			ImGui::MenuItem("PathTracer Settings", nullptr, &m_show_path_tracer_settings);
+			ImGui::MenuItem("Instance Settings", nullptr, &m_show_instance_settings);
 			if(m_instance->m_enable_pt_flag) ui_pop_disable();
 		}
 
@@ -206,7 +217,7 @@ void Application::ui_main_menubar()
 	{
 		if(ImGui::BeginMenu("View"))
 		{
-			if(!m_instance || m_instance->m_enable_pt_flag) ui_push_disable();
+			if(m_instance->m_enable_pt_flag) ui_push_disable();
 			if(ImGui::MenuItem("Diffuse", nullptr, m_instance->m_path_tracer.m_viewer_type == OglPathTracer::ViewerTypes::kDiffuse))
 				m_instance->m_path_tracer.m_viewer_type = OglPathTracer::ViewerTypes::kDiffuse;
 			if(ImGui::MenuItem("Specular", nullptr, m_instance->m_path_tracer.m_viewer_type == OglPathTracer::ViewerTypes::kSpecular))
@@ -217,26 +228,29 @@ void Application::ui_main_menubar()
 				m_instance->m_path_tracer.m_viewer_type = OglPathTracer::ViewerTypes::kNormal;
 			if(ImGui::MenuItem("Position", nullptr, m_instance->m_path_tracer.m_viewer_type == OglPathTracer::ViewerTypes::kPosition))
 				m_instance->m_path_tracer.m_viewer_type = OglPathTracer::ViewerTypes::kPosition;
-			if(!m_instance || m_instance->m_enable_pt_flag) ui_pop_disable();
+			if(m_instance->m_enable_pt_flag) ui_pop_disable();
 
-			if(!m_instance || !m_instance->m_enable_pt_flag) ui_push_disable();
+			if(!m_instance->m_enable_pt_flag) ui_push_disable();
 			if(ImGui::MenuItem("Radiance", nullptr, m_instance->m_path_tracer.m_viewer_type == OglPathTracer::ViewerTypes::kPTRadiance))
 				m_instance->m_path_tracer.m_viewer_type = OglPathTracer::ViewerTypes::kPTRadiance;
-			if(!m_instance || !m_instance->m_enable_pt_flag) ui_pop_disable();
+			if(!m_instance->m_enable_pt_flag) ui_pop_disable();
 
 			ImGui::EndMenu();
 		}
 
 		ImGui::Separator();
 
+		if(m_instance->m_lock_flag) ui_push_disable();
 		ImGui::Checkbox("Render", &m_instance->m_enable_pt_flag);
+		if(m_instance->m_lock_flag) ui_pop_disable();
+
 		ImGui::Checkbox("Lock", &m_instance->m_lock_flag);
 	}
 
 	ImGui::EndMainMenuBar();
 
 	if(export_openexr_popup)
-		ImGui::OpenPopup("OpenEXR Settings");
+		ImGui::OpenPopup("Export OpenEXR");
 	if(new_instance_popup)
 		ImGui::OpenPopup("New Instance");
 	if(open_instance_popup)
@@ -247,7 +261,7 @@ void Application::ui_export_openexr_modal()
 {
 	if(!m_instance) return;
 
-	if (ImGui::BeginPopupModal("OpenEXR Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	if (ImGui::BeginPopupModal("Export OpenEXR", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 	{
 		static char exr_name_buf[kFilenameBufSize]{};
 		static bool save_as_fp16{false};
@@ -284,9 +298,9 @@ void Application::ui_open_instance_modal()
 		{
 			if (ImGui::Button("Open", ImVec2(256, 0)))
 			{
-				m_instance.reset(new Instance());
-				if(!m_instance->InitializeFromFile(name_buf, m_window))
-					m_instance.reset();
+				std::unique_ptr<Instance> ptr{new Instance()};
+				if(ptr->InitializeFromFile(name_buf, m_window))
+					m_instance = std::move(ptr);
 
 				ImGui::CloseCurrentPopup();
 			}
@@ -325,11 +339,11 @@ void Application::ui_new_instance_modal()
 		{
 			if (ImGui::Button("Create", ImVec2(256, 0)))
 			{
-				m_instance.reset(new Instance());
-				m_instance->m_config = cfg;
-				m_instance->m_filename = name_buf;
-				if(!m_instance->Initialize(m_window))
-					m_instance.reset();
+				std::unique_ptr<Instance> ptr{new Instance()};
+				ptr->m_config = cfg;
+				ptr->m_filename = name_buf;
+				if(ptr->Initialize(m_window))
+					m_instance = std::move(ptr);
 
 				ImGui::CloseCurrentPopup();
 			}
@@ -347,28 +361,36 @@ void Application::ui_new_instance_modal()
 void Application::ui_control()
 {
 	if(!m_instance)
-		m_show_path_tracer_settings = m_show_camera_settings = false;
+		m_show_instance_settings = false;
 	ui_main_menubar();
 	ui_export_openexr_modal();
 	ui_new_instance_modal();
 	ui_open_instance_modal();
 
-	bool tracing = m_instance ? m_instance->m_enable_pt_flag : true;
 	if(m_show_info_overlay) ui_info_overlay_window();
-	if(!tracing)
+
+	bool tracing = m_instance ? m_instance->m_enable_pt_flag : true;
+	if(!tracing && m_show_instance_settings)
 	{
-		if(m_show_camera_settings)
+		ImGui::Begin("Instance Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+		if(ImGui::CollapsingHeader("General Settings"))
 		{
-			ImGui::Begin("Camera Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-			ui_camera_settings(&m_instance->m_config.m_cam_cfg);
-			ImGui::End();
+			ImGui::Text("Required reload to apply");
+			ui_general_settings(&m_instance->m_config);
 		}
-		if(m_show_path_tracer_settings)
+
+		if(ImGui::CollapsingHeader("BVH Settings"))
 		{
-			ImGui::Begin("PathTracer Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+			ImGui::Text("Required reload to regenerate BVH");
+			ui_bvh_settings(&m_instance->m_config.m_bvh_cfg);
+		}
+
+		if(ImGui::CollapsingHeader("PathTracer Settings"))
 			ui_path_tracer_settings(&m_instance->m_config.m_pt_cfg);
-			ImGui::End();
-		}
+
+		if(ImGui::CollapsingHeader("Camera Settings"))
+			ui_camera_settings(&m_instance->m_config.m_cam_cfg);
+		ImGui::End();
 	}
 }
 

@@ -144,20 +144,21 @@ void OglPathTracer::create_buffers()
 
 	//create textures
 	m_result_tex.Initialize();
-	m_result_tex.Load(mygl3::ImageInfo(m_width, m_height, 0, GL_RGBA32F, GL_RGBA, GL_FLOAT, nullptr));
+	m_result_tex.Storage(m_width, m_height, GL_RGBA32F);
 
 	//store tmp primary ray result
 	m_primary_tmp_tex.Initialize();
-	m_primary_tmp_tex.Load(mygl3::ImageInfo(m_width, m_height, 0, GL_RGBA32F, GL_RGBA, GL_FLOAT, nullptr));
+	m_primary_tmp_tex.Storage(m_width, m_height, GL_RGBA32F);
 
 	//create sobol sequence bias
 	m_sobol_bias_tex.Initialize();
+	m_sobol_bias_tex.Storage(m_width, m_height, GL_RG8);
 	{
 		std::vector<GLbyte> seeds(m_width*m_height*2u);
 		std::random_device rd{};
 		std::mt19937 gen{rd()};
 		for(auto &i : seeds) i = GLbyte(gen());
-		m_sobol_bias_tex.Load(mygl3::ImageInfo(m_width, m_height, 0, GL_RG8, GL_RG, GL_UNSIGNED_BYTE, seeds.data()));
+		m_sobol_bias_tex.Data(seeds.data(), m_width, m_height, GL_RG, GL_UNSIGNED_BYTE);
 	}
 
 	{

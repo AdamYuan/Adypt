@@ -20,6 +20,8 @@ bool Scene::LoadFromFile(const char *filename)
 		while(*(s - 1) != '/' && *(s - 1) != '\\' && s > filename) s --;
 		m_base_dir = {filename, s};
 	}
+
+	bool gen_normal_warn = false;
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 
@@ -113,8 +115,12 @@ bool Scene::LoadFromFile(const char *filename)
 
 					//generate normal
 					if(index.normal_index == -1)
+					{
 						tri.m_normals[2] = tri.m_normals[0] = tri.m_normals[1] =
-								glm::normalize(glm::cross(tri.m_positions[1] - tri.m_positions[0], tri.m_positions[2] - tri.m_positions[0]));
+								glm::normalize(glm::cross(tri.m_positions[1] - tri.m_positions[0],
+														  tri.m_positions[2] - tri.m_positions[0]));
+						gen_normal_warn = true;
+					}
 				}
 				m_aabb.Expand(tri.GetAABB());
 			}
@@ -122,7 +128,9 @@ bool Scene::LoadFromFile(const char *filename)
 			face ++;
 		}
 	}
-	printf("%ld triangles loaded from %s\n", m_triangles.size(), filename);
+	if(gen_normal_warn)
+		printf("[SCENE]Warning: Missing triangle normal\n");
+	printf("[SCENE]Info: %ld triangles loaded from %s\n", m_triangles.size(), filename);
 
 	return true;
 }
