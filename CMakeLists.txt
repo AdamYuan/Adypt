@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_PARALLEL_LEVEL 8)
 
 include_directories(dep)
-add_definitions(-DSTB_IMAGE_WRITE_IMPLEMENTATION -DGLM_FORCE_SWIZZLE)
+add_definitions(-DGLM_FORCE_SWIZZLE)
 
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -17,4 +17,4 @@ add_executable(
 		Adypt
 		${SOURCE_FILES})
 
-target_link_libraries(Adypt ${CMAKE_DL_LIBS} ${OPENGL_LIBRARIES} glfw)
+target_link_libraries(Adypt ${CMAKE_DL_LIBS} ${OPENGL_opengl_LIBRARY} glfw)

@@ -2,19 +2,19 @@
 // Created by adamyuan on 2/1/19.
 //
 #include "Camera.hpp"
-#include <glm/gtc/matrix_transform.hpp>
 #include <GLFW/glfw3.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include <imgui/imgui_internal.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 glm::mat4 Camera::GetView() const
 {
-	glm::mat4 view;
-	view = glm::rotate(view, glm::radians(-m_config->m_pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 view = glm::rotate(glm::identity<glm::mat4>(), glm::radians(-m_config->m_pitch), glm::vec3(1.0f, 0.0f, 0.0f));
 	view = glm::rotate(view, glm::radians(-m_config->m_yaw), glm::vec3(0.0f, 1.0f, 0.0f));
-	view = glm::translate(view, -m_config->m_position);
+	//view = glm::translate(view, -m_config->m_position);
 
 	return view;
 }

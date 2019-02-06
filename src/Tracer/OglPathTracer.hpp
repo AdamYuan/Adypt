@@ -25,8 +25,9 @@ private:
 	//shader args
 	struct CameraArgs
 	{
-		glm::vec4 m_origin_tmin;
-		glm::mat4 m_inv_projection, m_inv_view;
+		glm::vec4 m_origin_tmin{};
+		glm::mat4 m_inv_projection{};
+		glm::mat4 m_inv_view{};
 	} *m_camera_args;
 	struct PathTracerArgs
 	{

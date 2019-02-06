@@ -85,12 +85,14 @@ void FetchInfo(in const int tri_idx, in const vec2 tri_uv, out vec3 position, ou
 		vec3(tri.m_p3[0], tri.m_p3[1], tri.m_p3[2])*(1.0 - tri_uv.x - tri_uv.y);
 	emissive = vec3(mtl.m_er, mtl.m_eg, mtl.m_eb);
 #if TEXTURE_COUNT != 0
-	vec2 texcoords = 
-		vec2(tri.m_tc1[0], tri.m_tc1[1])*tri_uv.x +
-		vec2(tri.m_tc2[0], tri.m_tc2[1])*tri_uv.y + 
-		vec2(tri.m_tc3[0], tri.m_tc3[1])*(1.0 - tri_uv.x - tri_uv.y);
 	if(mtl.m_dtex != -1)
+	{
+		vec2 texcoords = 
+			vec2(tri.m_tc1[0], tri.m_tc1[1])*tri_uv.x +
+			vec2(tri.m_tc2[0], tri.m_tc2[1])*tri_uv.y + 
+			vec2(tri.m_tc3[0], tri.m_tc3[1])*(1.0 - tri_uv.x - tri_uv.y);
 		diffuse = texture(uTextures[mtl.m_dtex], texcoords).rgb;
+	}
 	else
 #endif
 		diffuse = vec3(mtl.m_dr, mtl.m_dg, mtl.m_db);

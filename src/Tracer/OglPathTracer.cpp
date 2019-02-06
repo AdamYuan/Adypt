@@ -186,7 +186,7 @@ void OglPathTracer::bind_buffers(const OglScene &scene)
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_camera_args_ubo.Get());
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_pt_args_ubo.Get());
 	glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_viewer_args_ubo.Get());
-	glBindBufferBase(GL_UNIFORM_BUFFER, 3, scene.GetTextureHandleBuffer().Get());
+	if(m_texture_count) glBindBufferBase(GL_UNIFORM_BUFFER, 3, scene.GetTextureHandleBuffer().Get());
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, scene.GetBVHNodeBuffer().Get());
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, scene.GetTriIndexBuffer().Get());

@@ -31,24 +31,10 @@ layout(std140, binding = 0) uniform uuCamera
 	mat4 uInvProjection;
 	mat4 uInvView;
 };
-layout(std140, binding = 2) uniform uuViewer
-{ int uType; };
-
+layout(std140, binding = 2) uniform uuViewer { int uType; };
 
 layout(std430, binding = 3) readonly buffer uuTriangles { Triangle uTriangles[]; };
 layout(std430, binding = 4) readonly buffer uuMaterials { Material uMaterials[]; };
-
-void FetchInfo(in const int tri_idx, in const vec2 tri_uv, out vec3 position, out vec3 normal, 
-			   out vec3 emissive, out vec3 diffuse, out vec3 specular, inout Material mtl)
-{
-	Triangle tri = uTriangles[tri_idx];
-	mtl = uMaterials[tri.m_material_id];
-	normal = normalize(
-		vec3(tri.m_n1[0], tri.m_n1[1], tri.m_n1[2])*tri_uv.x +
-		vec3(tri.m_n2[0], tri.m_n2[1], tri.m_n2[2])*tri_uv.y + 
-		vec3(tri.m_n3[0], tri.m_n3[1], tri.m_n3[2])*(1.0 - tri_uv.x - tri_uv.y));
-	emissive = vec3(mtl.m_er, mtl.m_eg, mtl.m_eb);
-}
 
 vec3 Camera()
 {
@@ -71,12 +57,14 @@ void main()
 		if(uType == 0) //diffuse
 		{
 #if TEXTURE_COUNT != 0
-			vec2 texcoords = 
-				vec2(tri.m_tc1[0], tri.m_tc1[1])*tri_uv.x +
-				vec2(tri.m_tc2[0], tri.m_tc2[1])*tri_uv.y + 
-				vec2(tri.m_tc3[0], tri.m_tc3[1])*(1.0 - tri_uv.x - tri_uv.y);
 			if(mtl.m_dtex != -1)
+			{
+				vec2 texcoords = 
+					vec2(tri.m_tc1[0], tri.m_tc1[1])*tri_uv.x +
+					vec2(tri.m_tc2[0], tri.m_tc2[1])*tri_uv.y + 
+					vec2(tri.m_tc3[0], tri.m_tc3[1])*(1.0 - tri_uv.x - tri_uv.y);
 				color = texture(uTextures[mtl.m_dtex], texcoords).rgb;
+			}
 			else
 #endif
 				color = vec3(mtl.m_dr, mtl.m_dg, mtl.m_db);

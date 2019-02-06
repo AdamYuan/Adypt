@@ -7,7 +7,6 @@
 
 #include "../InstanceConfig.hpp"
 #include "SBVH.hpp"
-#include <glm/gtx/compatibility.hpp>
 #include <algorithm>
 
 //build an SBVH with only one triangle per leaf
@@ -151,7 +150,7 @@ void SBVHBuilder::split_reference(const SBVHBuilder::Reference &t_ref, int t_dim
 
 		if((p0 < t_pos && t_pos < p1) || (p1 < t_pos && t_pos < p0)) //process edge
 		{
-			glm::vec3 x = glm::lerp(v0, v1, glm::clamp((t_pos - p0) / (p1 - p0), 0.0f, 1.0f));
+			glm::vec3 x = glm::mix(v0, v1, glm::clamp((t_pos - p0) / (p1 - p0), 0.0f, 1.0f));
 			t_left->m_aabb.Expand(x);
 			t_right->m_aabb.Expand(x);
 		}

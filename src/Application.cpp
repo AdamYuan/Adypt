@@ -42,7 +42,6 @@ void Application::Initialize()
 	ImGui_ImplOpenGL3_Init("#version 450 core");
 
 	pfd::settings::verbose(true);
-
 }
 
 void Application::InitializeFromFile(const char *filename)

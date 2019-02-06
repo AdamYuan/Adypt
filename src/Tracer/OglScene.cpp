@@ -45,7 +45,6 @@ int OglScene::load_texture(std::vector<mygl3::Texture2D> *textures,
 
 void OglScene::Initialize(const Scene &scene, const WideBVH &bvh)
 {
-	m_aabb = scene.GetAABB();
 	create_buffers(scene, bvh);
 }
 
@@ -133,9 +132,11 @@ void OglScene::create_buffers(const Scene &scene, const WideBVH &bvh)
 	m_tri_matrices_ssbo.Storage(tri_matrices.data(), tri_matrices.data() + tri_matrices.size(), 0);
 	m_material_ssbo.Initialize();
 	m_material_ssbo.Storage(materials.data(), materials.data() + materials.size(), 0);
-	m_texture_handle_ubo.Initialize();
-	m_texture_handle_ubo.Storage(texture_handles.data(), texture_handles.data() + texture_handles.size(), 0);
 
-	//m_bvh_nodes_tex.Initialize();
+	if(!m_textures.empty())
+	{
+		m_texture_handle_ubo.Initialize();
+		m_texture_handle_ubo.Storage(texture_handles.data(), texture_handles.data() + texture_handles.size(), 0);
+	}
 }
 
