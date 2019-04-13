@@ -35,4 +35,6 @@ make
 ## Screenshots
 ![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/1.png)
 ![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/2.png)
+![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/3.png)
+![](https://raw.githubusercontent.com/AdamYuan/Adypt/master/screenshots/4.png)
 

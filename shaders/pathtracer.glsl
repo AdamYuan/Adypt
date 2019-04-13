@@ -129,6 +129,7 @@ vec3 Render(vec4 origin, vec3 dir)
 
 		if(tri_idx == -1)
 		{
+			//if(!BVHIntersection(origin, normalize(vec3(0.6, 1, 0.2))))
 			ret += color * vec3(uSunR, uSunG, uSunB);
 			break;
 		}
@@ -136,6 +137,9 @@ vec3 Render(vec4 origin, vec3 dir)
 		FetchInfo(tri_idx, tri_uv, position, normal, emissive, diffuse, specular, mtl);
 		origin.xyz = position;
 		ret += color * emissive;
+
+		if(mtl.m_illum < 6 && dot(dir, normal) > 0)
+			normal = -normal;
 
 		switch(mtl.m_illum)
 		{
